@@ -1,0 +1,372 @@
+#include "mpmainwindow.h"
+#include "ui_mpmainwindow.h"
+#include <QDebug>
+
+MPMainWindow::MPMainWindow(QWidget *parent) :
+    QMainWindow(parent),
+    ui(new Ui::MPMainWindow)
+{
+    ui->setupUi(this);
+
+    // hide the current song information box
+    ui->currentSongInfo->setMaximumHeight(0);
+
+    // hide the loading indicator
+    ui->loadingIndicator->setMaximumHeight(0);
+
+    // initialise our model then assign it to our playlist view
+    model = new MPPlaylistTableVIewModel;
+    ui->playlistView->setModel(model);
+
+    // resize table view headers
+    ui->playlistView->horizontalHeader()->setSectionResizeMode(0, QHeaderView::ResizeToContents);
+    ui->playlistView->horizontalHeader()->setSectionResizeMode(1, QHeaderView::Stretch);
+    ui->playlistView->horizontalHeader()->setSectionResizeMode(2, QHeaderView::Stretch);
+    ui->playlistView->horizontalHeader()->setSectionResizeMode(3, QHeaderView::Stretch);
+    ui->playlistView->horizontalHeader()->setSectionResizeMode(4, QHeaderView::ResizeToContents);
+    ui->playlistView->horizontalHeader()->setSectionResizeMode(5, QHeaderView::Stretch);
+
+    // initialise our player
+    player = new QMediaPlayer;
+    player->setAudioRole(QAudio::MusicRole);
+    player->setPlaylist(model->playlist());
+
+    // connect this player to our model
+    model->set_player_reference(player);
+
+    // initialise our file dialog
+    add_dialog.setAcceptMode(QFileDialog::AcceptOpen);
+    add_dialog.setFileMode(QFileDialog::ExistingFiles);
+    add_dialog.setNameFilter(tr("Music Files (*.ogg *.mp3 *.m4a *.webm *.flac)"));
+
+    // previous position of the seek slider
+    _seek_previous = 0;
+
+    // update window size
+    this->resize(720, 480);
+
+    // update our volume slider value
+    ui->volumeSlider->setValue(player->volume());
+
+    // establish connections
+    connect(ui->actionAdd, SIGNAL(triggered(bool)),
+            &add_dialog, SLOT(show()));
+
+    connect(model->playlist(), SIGNAL(loaded()),
+            this, SLOT(playlistUpdated()));
+
+    connect(model->playlist(), SIGNAL(loadFailed()),
+            this, SLOT(playlistLoadError()));
+
+    connect(&thread, SIGNAL(analysis_complete(QList<MPMetadata*>*)),
+            model, SLOT(metadata_update(QList<MPMetadata*>*)));
+
+    connect(&thread, SIGNAL(analysis_complete(QList<MPMetadata*>*)),
+            this, SLOT(playlistUpdated()));
+
+    connect(ui->actionAddToPlaylist, SIGNAL(triggered(bool)),
+            &add_dialog, SLOT(show()));
+
+    connect(ui->actionPausePlay, SIGNAL(triggered(bool)),
+            this, SLOT(pausePlayTriggered()));
+
+    connect(ui->actionRemove, SIGNAL(triggered(bool)),
+            this, SLOT(deletePlaylistItem()));
+
+    connect(&add_dialog, SIGNAL(filesSelected(QStringList)),
+            this, SLOT(addToPlaylist(QStringList)));
+
+    connect(ui->seekSlider, SIGNAL(valueChanged(int)),
+            this, SLOT(seekSliderChanged(int)));
+
+    connect(player, SIGNAL(stateChanged(QMediaPlayer::State)),
+            this, SLOT(updatePausePlayIcon(QMediaPlayer::State)));
+
+    connect(player, SIGNAL(durationChanged(qint64)),
+            this, SLOT(durationChanged(qint64)));
+
+    connect(player, SIGNAL(currentMediaChanged(QMediaContent)),
+            this, SLOT(mediaChanged(QMediaContent)));
+
+    connect(player, SIGNAL(positionChanged(qint64)),
+            this, SLOT(positionChanged(qint64)));
+
+    connect(ui->actionNext, SIGNAL(triggered(bool)),
+            model->playlist(), SLOT(next()));
+
+    connect(ui->actionPrevious, SIGNAL(triggered(bool)),
+            model->playlist(), SLOT(previous()));
+
+    connect(ui->actionStop, SIGNAL(triggered(bool)),
+            player, SLOT(stop()));
+
+    connect(ui->playlistView, SIGNAL(doubleClicked(QModelIndex)),
+            this, SLOT(updatePlaylistIndex(QModelIndex)));
+
+    connect(ui->volumeSlider, SIGNAL(valueChanged(int)),
+            this, SLOT(volumeUpdate(int)));
+
+    // initialise animations
+    song_info_animation = new QPropertyAnimation(ui->currentSongInfo, "maximumHeight");
+    loading_animation = new QPropertyAnimation(ui->loadingIndicator, "maximumHeight");
+
+    song_info_animation->setDuration(250);
+    loading_animation->setDuration(250);
+}
+
+QString MPMainWindow::time(int secs)
+{
+    // get minutes and seconds from "secs"
+    int minutes = secs / 60;
+    int seconds = secs % 60;
+
+    QString min_str = QString("%1").arg(minutes);
+    QString sec_str = QString("%1").arg(seconds);
+
+    // apply padding
+    if (minutes < 10) min_str = "0" + min_str;
+    if (seconds < 10) sec_str = "0" + sec_str;
+
+    return min_str + ":" + sec_str;
+}
+
+void MPMainWindow::mediaChanged(QMediaContent media)
+{
+    if (!media.isNull() && !model->updating())
+    {
+        int index = player->playlist()->currentIndex();
+
+        // select the currently playing item
+        if (index >= 0 && index < player->playlist()->mediaCount())
+        {
+            set_song_info_visibility(true);
+            ui->playlistView->selectRow(index);
+
+            // update the current song info box
+            MPMetadata *metadata = model->metadata()->at(index);
+            ui->songTitle->setText(metadata->title());
+            ui->songArtist->setText(metadata->artist());
+            ui->songAlbum->setText(metadata->album());
+            ui->songGenre->setText(metadata->genre());
+            ui->songYear->setText(metadata->year());
+            ui->songArt->setPixmap(metadata->image());
+
+            // update title
+            setWindowTitle("Minuet - " + metadata->title() + " - " + metadata->artist());
+        }
+    }
+    else
+    {
+        setWindowTitle("Minuet");
+    }
+}
+
+void MPMainWindow::set_song_info_visibility(bool visible)
+{
+    if ((!visible && ui->currentSongInfo->maximumHeight() == 0) ||
+        (visible && ui->currentSongInfo->maximumHeight() == 140))
+        return;
+
+    song_info_animation->stop();
+    song_info_animation->setStartValue(visible ? 0 : 140);
+    song_info_animation->setEndValue(visible ? 140 : 0);
+    song_info_animation->start();
+}
+
+void MPMainWindow::set_loading_visibility(bool visible)
+{
+    loading_animation->stop();
+    loading_animation->setStartValue(visible ? 0 : 40);
+    loading_animation->setEndValue(visible ? 40 : 0);
+    loading_animation->start();
+}
+
+void MPMainWindow::durationChanged(qint64 duration)
+{
+    if (!model->updating())
+    {
+        // calculate total time
+        double seconds = duration / 1000.0f;
+
+        // update duration
+        ui->seekSlider->setMaximum(duration);
+
+        // update seek duration label
+        ui->seekDuration->setText(time(seconds));
+    }
+}
+
+void MPMainWindow::positionChanged(qint64 position)
+{
+    // update seek slider position
+    _seek_previous = position;
+    ui->seekSlider->setValue(position);
+}
+
+void MPMainWindow::seekSliderChanged(int seek)
+{
+    // update player position
+    if (seek != _seek_previous)
+    {
+        player->setPosition(seek);
+    }
+
+    // find out position (in time)
+    double seconds = (ui->seekSlider->maximum()
+                     * ((double)seek / ui->seekSlider->maximum())) / 1000.0f;
+
+    // update seek label
+    ui->seekLabel->setText(time(seconds));
+
+    // update previous seek position
+    _seek_previous = seek;
+}
+
+void MPMainWindow::volumeUpdate(int x)
+{
+    // update player volume
+    player->setVolume(x);
+
+    // update volume label
+    ui->volumeLabel->setText(QString("%1\%").arg(x));
+}
+
+void MPMainWindow::pausePlayTriggered()
+{
+    if (player->state() == QMediaPlayer::PlayingState)
+    {
+        set_song_info_visibility(false);
+        player->pause();
+    }
+    else
+    {
+        set_song_info_visibility(true);
+        player->play();
+    }
+}
+
+void MPMainWindow::updatePausePlayIcon(QMediaPlayer::State state)
+{
+    if (state == QMediaPlayer::PlayingState)
+    {
+        ui->actionPausePlay->setIcon(QIcon(":/icons/pause.png"));
+        ui->actionPausePlay->setText(tr("Pause"));
+    }
+    else if (QMediaPlayer::StoppedState)
+    {
+        // hide the current information box
+        set_song_info_visibility(false);
+    }
+    else
+    {
+        ui->actionPausePlay->setIcon(QIcon(":/icons/play.png"));
+        ui->actionPausePlay->setText(tr("Play"));
+    }
+}
+
+void MPMainWindow::updatePlaylistIndex(QModelIndex index)
+{
+    // update playlist index
+    player->stop();
+    player->playlist()->setCurrentIndex(index.row());
+    player->play();
+}
+
+void MPMainWindow::playlistUpdated()
+{
+    // hide loading indicator
+    set_loading_visibility(false);
+}
+
+void MPMainWindow::playlistLoadError()
+{
+    QMessageBox::warning(this, tr("Add to Playlist (Error)"),
+                     "There was a problem adding a selected file into the playlist.");
+}
+    
+void MPMainWindow::addToPlaylist(QStringList filenames)
+{
+    // show the loading indicator
+    set_loading_visibility(true);
+
+    foreach (QString filename, filenames)
+    {
+        // load files into our media player
+        model->playlist()->addMedia(QUrl::fromLocalFile(filename));
+    }
+
+    // start metadata analyser
+    model->set_updating(true);
+    thread.begin(this->player);
+}
+
+void MPMainWindow::deletePlaylistItem()
+{
+    QModelIndex index = ui->playlistView->selectionModel()->selection().indexes().first();
+
+    if (index.row() >= 0 && index.row() < model->metadata()->length())
+    {
+        qint64 current_position = ui->seekSlider->value();
+        int former_state = player->state();
+        int playlist_index = player->playlist()->currentIndex();
+
+        // delete playlist item
+        player->playlist()->removeMedia(index.row());
+
+        // delete the target row
+        delete model->metadata()->at(index.row());
+        model->metadata()->removeAt(index.row());
+
+        if (index.row() < playlist_index)
+        {
+            // update position
+            player->playlist()->setCurrentIndex(playlist_index - 1);
+            player->setPosition(current_position);
+
+            if (former_state == QMediaPlayer::PlayingState)
+                player->play();
+        }
+
+        // hide song info box, if we deleted the last row
+        if (model->metadata()->length() == 0)
+            set_song_info_visibility(false);
+
+        // update layout
+        emit model->layoutChanged();
+    }
+}
+
+void MPMainWindow::keyPressEvent(QKeyEvent *event)
+{
+    // handle default behaviour(s)
+    QMainWindow::keyPressEvent(event);
+
+    // handle "return" key for playback
+    if (event->key() == Qt::Key_Return)
+    {
+        // get selected index
+        QModelIndex index = ui->playlistView->selectionModel()->selection().indexes().first();
+
+        if (index.row() >= 0 && index.row() < model->metadata()->length())
+        {
+            player->playlist()->setCurrentIndex(index.row());
+            player->play();
+        }
+    }
+}
+
+MPMainWindow::~MPMainWindow()
+{
+    // stop player
+    player->stop();
+
+    // free allocated memory
+    thread.dealloc();
+    thread.quit();
+
+    delete song_info_animation;
+    delete loading_animation;
+    delete player;
+    delete model;
+    delete ui;
+}
