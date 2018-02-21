@@ -14,6 +14,12 @@ MPMainWindow::MPMainWindow(QWidget *parent) :
     // hide the loading indicator
     ui->loadingIndicator->setMaximumHeight(0);
 
+    // hide the lyrics frame
+    ui->lyricsFrame->setMaximumWidth(0);
+
+    // hide the vertical scrollbar in the lyric view widget
+    ui->lyricsView->verticalScrollBar()->hide();
+
     // initialise our model then assign it to our playlist view
     model = new MPPlaylistTableVIewModel;
     ui->playlistView->setModel(model);
@@ -23,7 +29,7 @@ MPMainWindow::MPMainWindow(QWidget *parent) :
     ui->playlistView->horizontalHeader()->setSectionResizeMode(1, QHeaderView::Stretch);
     ui->playlistView->horizontalHeader()->setSectionResizeMode(2, QHeaderView::Stretch);
     ui->playlistView->horizontalHeader()->setSectionResizeMode(3, QHeaderView::Stretch);
-    ui->playlistView->horizontalHeader()->setSectionResizeMode(4, QHeaderView::ResizeToContents);
+    ui->playlistView->horizontalHeader()->setSectionResizeMode(4, QHeaderView::Fixed);
     ui->playlistView->horizontalHeader()->setSectionResizeMode(5, QHeaderView::Stretch);
 
     // initialise our player
@@ -43,7 +49,9 @@ MPMainWindow::MPMainWindow(QWidget *parent) :
     _seek_previous = 0;
 
     // update window size
-    this->resize(720, 480);
+    this->setMinimumWidth(640);
+    this->setMinimumHeight(480);
+    this->resize(820, 480);
 
     // update our volume slider value
     ui->volumeSlider->setValue(player->volume());
@@ -100,6 +108,9 @@ MPMainWindow::MPMainWindow(QWidget *parent) :
     connect(ui->actionStop, SIGNAL(triggered(bool)),
             player, SLOT(stop()));
 
+    connect(ui->actionLyrics, SIGNAL(triggered(bool)),
+            this, SLOT(toggle_lyric_frame(bool)));
+
     connect(ui->playlistView, SIGNAL(doubleClicked(QModelIndex)),
             this, SLOT(updatePlaylistIndex(QModelIndex)));
 
@@ -109,6 +120,8 @@ MPMainWindow::MPMainWindow(QWidget *parent) :
     // initialise animations
     song_info_animation = new QPropertyAnimation(ui->currentSongInfo, "maximumHeight");
     loading_animation = new QPropertyAnimation(ui->loadingIndicator, "maximumHeight");
+    lyric_frame_animation = new QPropertyAnimation(ui->lyricsFrame, "maximumWidth");
+    lyric_frame_animation2 = new QPropertyAnimation(ui->lyricsFrame, "minimumWidth");
 
     song_info_animation->setDuration(250);
     loading_animation->setDuration(250);
@@ -151,6 +164,10 @@ void MPMainWindow::mediaChanged(QMediaContent media)
             ui->songYear->setText(metadata->year());
             ui->songArt->setPixmap(metadata->image());
 
+            // update lyrics
+            ui->lyricsView->setText((metadata->lyrics().isEmpty() ?
+                                         "No Lyrics" : metadata->lyrics()));
+
             // update title
             setWindowTitle("Minuet - " + metadata->title() + " - " + metadata->artist());
         }
@@ -172,6 +189,24 @@ void MPMainWindow::set_song_info_visibility(bool visible)
     song_info_animation->setEndValue(visible ? 140 : 0);
     song_info_animation->start();
 }
+
+void MPMainWindow::set_lyric_frame_visibility(bool visible)
+{
+    if ((!visible && ui->lyricsFrame->maximumWidth() == 0) ||
+        (visible && ui->lyricsFrame->maximumWidth() == 240))
+        return;
+
+    lyric_frame_animation->stop();
+    lyric_frame_animation->setStartValue(visible ? 0 : 240);
+    lyric_frame_animation->setEndValue(visible ? 240 : 0);
+    lyric_frame_animation->start();
+
+    lyric_frame_animation2->stop();
+    lyric_frame_animation2->setStartValue(visible ? 0 : 240);
+    lyric_frame_animation2->setEndValue(visible ? 240 : 0);
+    lyric_frame_animation2->start();
+}
+
 
 void MPMainWindow::set_loading_visibility(bool visible)
 {
@@ -220,6 +255,16 @@ void MPMainWindow::seekSliderChanged(int seek)
 
     // update previous seek position
     _seek_previous = seek;
+
+    // if we're autoscrolling, update the lyric view
+    if (ui->lyricAutoScrollButton->isChecked())
+    {
+        float position = ((float)seek/ui->seekSlider->maximum());
+        position = position * ui->lyricsView->verticalScrollBar()->maximum();
+
+        ui->lyricsView->verticalScrollBar()->setValue(
+                    ui->lyricsDelaySlider->value() + position);
+    }
 }
 
 void MPMainWindow::volumeUpdate(int x)
@@ -336,6 +381,18 @@ void MPMainWindow::deletePlaylistItem()
     }
 }
 
+void MPMainWindow::toggle_lyric_frame(bool active)
+{
+    if (active)
+    {
+        set_lyric_frame_visibility(true);
+    }
+    else
+    {
+        set_lyric_frame_visibility(false);
+    }
+}
+
 void MPMainWindow::keyPressEvent(QKeyEvent *event)
 {
     // handle default behaviour(s)
@@ -366,6 +423,9 @@ MPMainWindow::~MPMainWindow()
 
     delete song_info_animation;
     delete loading_animation;
+    delete lyric_frame_animation;
+    delete lyric_frame_animation2;
+
     delete player;
     delete model;
     delete ui;

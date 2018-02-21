@@ -10,6 +10,7 @@
 #include <QMediaPlayer>
 #include <QMediaPlaylist>
 #include <QMediaMetaData>
+#include <QTextStream>
 #include "mpmetadata.h"
 
 class MPMetadataAnalysisThread : public QThread

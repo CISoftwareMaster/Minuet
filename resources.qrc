@@ -9,5 +9,6 @@
         <file>icons/open.png</file>
         <file>icons/remove.png</file>
         <file>icons/icon.png</file>
+        <file>icons/lyrics.png</file>
     </qresource>
 </RCC>

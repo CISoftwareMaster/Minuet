@@ -4,6 +4,7 @@
 #include <math.h>
 #include <QKeyEvent>
 #include <QMainWindow>
+#include <QTextBrowser>
 #include <QMediaPlayer>
 #include <QMessageBox>
 #include <QFileDialog>
@@ -26,6 +27,7 @@ public:
 
     void set_song_info_visibility(bool visible);
     void set_loading_visibility(bool visible);
+    void set_lyric_frame_visibility(bool visible);
 
 private slots:
     void volumeUpdate(int);
@@ -40,12 +42,15 @@ private slots:
     void seekSliderChanged(int);
     void mediaChanged(QMediaContent);
     void deletePlaylistItem();
+    void toggle_lyric_frame(bool);
 
 private:
     QModelIndex selected_item;
     QString time(int seconds);
 
     QPropertyAnimation *song_info_animation;
+    QPropertyAnimation *lyric_frame_animation;
+    QPropertyAnimation *lyric_frame_animation2;
     QPropertyAnimation *loading_animation;
 
     Ui::MPMainWindow *ui;

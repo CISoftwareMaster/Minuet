@@ -80,6 +80,11 @@ void MPMetadataAnalysisThread::metadata_update(bool available)
 {
     if (available && _started && (analysis_index == _metadata->length() + 1))
     {
+        // get the base URL
+        QStringList base_url_l = _player->currentMedia().canonicalUrl().toString().split("/");
+        base_url_l.removeLast();
+        QString base_url = base_url_l.join("/").replace("file://", "");
+
         // get metadata
         MPMetadata *item = new MPMetadata;
         item->set_track_number(_player->metaData(QMediaMetaData::TrackNumber).toString());
@@ -89,6 +94,28 @@ void MPMetadataAnalysisThread::metadata_update(bool available)
         item->set_album_artist(_player->metaData(QMediaMetaData::AlbumArtist).toString());
         item->set_year(_player->metaData(QMediaMetaData::Year).toString());
         item->set_genre(_player->metaData(QMediaMetaData::Genre).toString());
+
+        // try to load its lyrics
+        QString lyrics = _player->metaData(QMediaMetaData::Lyrics).toString();
+
+        if (lyrics.isEmpty())
+        {
+            // load its lyric file (if its available)
+            QStringList title_s = _player->currentMedia().canonicalUrl().fileName().split(".");
+            title_s.removeLast();
+            QString title = base_url + "/" + title_s.join(".") + ".lyrics";
+            QFile lyric_file(title);
+
+            if (lyric_file.open(QIODevice::ReadOnly))
+            {
+                // read its content
+                QTextStream stream(&lyric_file);
+                item->set_lyrics(stream.readAll());
+
+                // end of reading
+                lyric_file.close();
+            }
+        }
 
         // if the title string is empty, use its filename instead
         if (item->title().isEmpty())
@@ -116,9 +143,6 @@ void MPMetadataAnalysisThread::metadata_update(bool available)
             if (cover_art_image.isNull())
             {
                 // try to find "folder" or "cover" images
-                QStringList base_url_l = _player->currentMedia().canonicalUrl().toString().split("/");
-                base_url_l.removeLast();
-                QString base_url = base_url_l.join("/").replace("file://", "");
 
                 QStringList c_art_names;
                 c_art_names.append("cover.jpg");
