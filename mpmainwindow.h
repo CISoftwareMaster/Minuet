@@ -3,6 +3,10 @@
 
 #include <math.h>
 #include <QKeyEvent>
+#include <QDragEnterEvent>
+#include <QMimeData>
+#include <QDropEvent>
+#include <QFileInfo>
 #include <QMainWindow>
 #include <QTextBrowser>
 #include <QMediaPlayer>
@@ -61,6 +65,11 @@ private:
     qint64 _seek_previous;
 
     void keyPressEvent(QKeyEvent *event) override;
+
+    // support for file drop
+    QStringList drop_file_extensions;
+    void dragEnterEvent(QDragEnterEvent *event) override;
+    void dropEvent(QDropEvent *event) override;
 };
 
 #endif // MPMAINWINDOW_H

@@ -19,12 +19,23 @@
     <height>300</height>
    </size>
   </property>
+  <property name="font">
+   <font>
+    <stylestrategy>PreferAntialias</stylestrategy>
+   </font>
+  </property>
+  <property name="acceptDrops">
+   <bool>true</bool>
+  </property>
   <property name="windowTitle">
    <string>Minuet</string>
   </property>
   <property name="windowIcon">
    <iconset resource="resources.qrc">
     <normaloff>:/icons/icon.png</normaloff>:/icons/icon.png</iconset>
+  </property>
+  <property name="windowOpacity">
+   <double>1.000000000000000</double>
   </property>
   <property name="toolButtonStyle">
    <enum>Qt::ToolButtonTextUnderIcon</enum>
@@ -441,7 +452,7 @@ p, li { white-space: pre-wrap; }
           <item row="0" column="0">
            <widget class="QPushButton" name="lyricAutoScrollButton">
             <property name="toolTip">
-             <string>Automatically scroll the lyrics long with the currently playing sone.</string>
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Automatically scroll the lyrics long with the currently playing song.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
             </property>
             <property name="text">
              <string>Autoscroll</string>

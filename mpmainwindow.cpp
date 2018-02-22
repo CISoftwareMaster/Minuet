@@ -8,6 +8,9 @@ MPMainWindow::MPMainWindow(QWidget *parent) :
 {
     ui->setupUi(this);
 
+    // supported extensions for file drop
+    drop_file_extensions = QStringList({"ogg", "mp3", "m4a", "webm", "flac"});
+
     // hide the current song information box
     ui->currentSongInfo->setMaximumHeight(0);
 
@@ -127,6 +130,68 @@ MPMainWindow::MPMainWindow(QWidget *parent) :
     loading_animation->setDuration(250);
 }
 
+void MPMainWindow::dragEnterEvent(QDragEnterEvent *event)
+{
+    // get mime data
+    const QMimeData *mime = event->mimeData();
+
+    // do the dropped file(s) have a valid extension?
+    bool has_valid = false;
+
+    // try to find at least one supported file
+    foreach (QUrl url, mime->urls())
+    {
+        QFileInfo info(url.toString());
+        qDebug() << info.suffix();
+
+        if (drop_file_extensions.contains(info.suffix()))
+        {
+            has_valid = true;
+            qDebug() << "Yes";
+            has_valid = true;
+        }
+    }
+
+    // check if this file is supported
+    if (has_valid)
+    {
+        // allow this file drop
+        event->acceptProposedAction();
+    }
+}
+
+void MPMainWindow::dropEvent(QDropEvent *event)
+{
+    int files_loaded = 0;
+
+    // iterate over the URls
+    foreach (QUrl url, event->mimeData()->urls())
+    {
+        QFileInfo info(url.toString());
+        QString url_s = url.toString().replace("file://", "");
+
+        // only load accepted files into the media player
+        if (drop_file_extensions.contains(info.suffix()))
+        {
+            // load this file into the player
+            player->playlist()->addMedia(QUrl::fromLocalFile(url_s));
+
+            // increment the files loaded counter
+            files_loaded ++;
+        }
+    }
+
+    if (files_loaded > 0)
+    {
+        // show loading indicator
+        set_loading_visibility(true);
+
+        // start metadata analysis
+        model->set_updating(true);
+        thread.begin(this->player);
+    }
+}
+
 QString MPMainWindow::time(int secs)
 {
     // get minutes and seconds from "secs"
@@ -149,10 +214,10 @@ void MPMainWindow::mediaChanged(QMediaContent media)
     {
         int index = player->playlist()->currentIndex();
 
-        // select the currently playing item
+        // check if the index is within range
         if (index >= 0 && index < player->playlist()->mediaCount())
         {
-            set_song_info_visibility(true);
+            // select the currently playing item
             ui->playlistView->selectRow(index);
 
             // update the current song info box
@@ -170,6 +235,10 @@ void MPMainWindow::mediaChanged(QMediaContent media)
 
             // update title
             setWindowTitle("Minuet - " + metadata->title() + " - " + metadata->artist());
+
+            // show the current info box
+            if (player->state() != QMediaPlayer::StoppedState)
+                set_song_info_visibility(true);
         }
     }
     else
@@ -297,24 +366,23 @@ void MPMainWindow::updatePausePlayIcon(QMediaPlayer::State state)
         ui->actionPausePlay->setIcon(QIcon(":/icons/pause.png"));
         ui->actionPausePlay->setText(tr("Pause"));
     }
-    else if (QMediaPlayer::StoppedState)
-    {
-        // hide the current information box
-        set_song_info_visibility(false);
-    }
     else
     {
         ui->actionPausePlay->setIcon(QIcon(":/icons/play.png"));
         ui->actionPausePlay->setText(tr("Play"));
     }
+
+    // hide the current information box
+    if (state == QMediaPlayer::StoppedState)
+            set_song_info_visibility(false);
 }
 
 void MPMainWindow::updatePlaylistIndex(QModelIndex index)
 {
-    // update playlist index
-    player->stop();
-    player->playlist()->setCurrentIndex(index.row());
     player->play();
+
+    // update playlist index
+    player->playlist()->setCurrentIndex(index.row());
 }
 
 void MPMainWindow::playlistUpdated()
