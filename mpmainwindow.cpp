@@ -495,10 +495,11 @@ void MPMainWindow::download_lyrics()
     {
         // get metadata index
         int index = player->playlist()->currentIndex();
-        MPMetadata *metadata = model->metadata()->at(index);
 
-        if (metadata != NULL)
+        if (index >= 0 && model->metadata()->length())
         {
+            MPMetadata *metadata = model->metadata()->at(index);
+
             // show the lyric fetch indicator
             set_lyric_download_visibility(true);
 
