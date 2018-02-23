@@ -6,7 +6,6 @@
 #include <QDragEnterEvent>
 #include <QMimeData>
 #include <QDropEvent>
-#include <QFileInfo>
 #include <QMainWindow>
 #include <QTextBrowser>
 #include <QMediaPlayer>
@@ -16,6 +15,7 @@
 #include "mpfancyslider.h"
 #include "mpplaylisttableviewmodel.h"
 #include "mpmetadataanalysisthread.h"
+#include "mplyricfetcher.h"
 
 namespace Ui {
 class MPMainWindow;
@@ -32,6 +32,7 @@ public:
     void set_song_info_visibility(bool visible);
     void set_loading_visibility(bool visible);
     void set_lyric_frame_visibility(bool visible);
+    void set_lyric_download_visibility(bool visible);
 
 private slots:
     void volumeUpdate(int);
@@ -47,6 +48,8 @@ private slots:
     void mediaChanged(QMediaContent);
     void deletePlaylistItem();
     void toggle_lyric_frame(bool);
+    void download_lyrics();
+    void lyrics_downloaded(QString lyrics);
 
 private:
     QModelIndex selected_item;
@@ -56,13 +59,16 @@ private:
     QPropertyAnimation *lyric_frame_animation;
     QPropertyAnimation *lyric_frame_animation2;
     QPropertyAnimation *loading_animation;
+    QPropertyAnimation *lyric_fetch_animation;
 
     Ui::MPMainWindow *ui;
     QMediaPlayer *player;
     MPPlaylistTableVIewModel *model;
-    MPMetadataAnalysisThread thread;
     QFileDialog add_dialog;
     qint64 _seek_previous;
+
+    MPMetadataAnalysisThread thread;
+    MPLyricFetcher lyric_fetcher;
 
     void keyPressEvent(QKeyEvent *event) override;
 

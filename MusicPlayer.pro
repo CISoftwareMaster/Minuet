@@ -4,7 +4,7 @@
 #
 #-------------------------------------------------
 
-QT       += core gui multimedia
+QT       += core gui multimedia network
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -31,7 +31,8 @@ SOURCES += \
     mpmetadataanalysisthread.cpp \
     mpmetadata.cpp \
     mpfancyslider.cpp \
-    mpplaylisttableview.cpp
+    mpplaylisttableview.cpp \
+    mplyricfetcher.cpp
 
 HEADERS += \
         mpmainwindow.h \
@@ -39,7 +40,8 @@ HEADERS += \
     mpmetadataanalysisthread.h \
     mpmetadata.h \
     mpfancyslider.h \
-    mpplaylisttableview.h
+    mpplaylisttableview.h \
+    mplyricfetcher.h
 
 FORMS += \
         mpmainwindow.ui

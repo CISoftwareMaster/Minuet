@@ -23,6 +23,9 @@ MPMainWindow::MPMainWindow(QWidget *parent) :
     // hide the vertical scrollbar in the lyric view widget
     ui->lyricsView->verticalScrollBar()->hide();
 
+    // hide the lyric fetch label indicator
+    ui->lyricsDownloadLabel->setMaximumHeight(0);
+
     // initialise our model then assign it to our playlist view
     model = new MPPlaylistTableVIewModel;
     ui->playlistView->setModel(model);
@@ -120,11 +123,18 @@ MPMainWindow::MPMainWindow(QWidget *parent) :
     connect(ui->volumeSlider, SIGNAL(valueChanged(int)),
             this, SLOT(volumeUpdate(int)));
 
+    connect(&lyric_fetcher, SIGNAL(fetch_finished(QString)),
+            this, SLOT(lyrics_downloaded(QString)));
+
+    connect(ui->lyricsDownloadButton, SIGNAL(clicked(bool)),
+            this, SLOT(download_lyrics()));
+
     // initialise animations
     song_info_animation = new QPropertyAnimation(ui->currentSongInfo, "maximumHeight");
     loading_animation = new QPropertyAnimation(ui->loadingIndicator, "maximumHeight");
     lyric_frame_animation = new QPropertyAnimation(ui->lyricsFrame, "maximumWidth");
     lyric_frame_animation2 = new QPropertyAnimation(ui->lyricsFrame, "minimumWidth");
+    lyric_fetch_animation = new QPropertyAnimation(ui->lyricsDownloadLabel, "minimumHeight");
 
     song_info_animation->setDuration(250);
     loading_animation->setDuration(250);
@@ -142,13 +152,11 @@ void MPMainWindow::dragEnterEvent(QDragEnterEvent *event)
     foreach (QUrl url, mime->urls())
     {
         QFileInfo info(url.toString());
-        qDebug() << info.suffix();
 
         if (drop_file_extensions.contains(info.suffix()))
         {
             has_valid = true;
-            qDebug() << "Yes";
-            has_valid = true;
+            break;
         }
     }
 
@@ -230,7 +238,7 @@ void MPMainWindow::mediaChanged(QMediaContent media)
             ui->songArt->setPixmap(metadata->image());
 
             // update lyrics
-            ui->lyricsView->setText((metadata->lyrics().isEmpty() ?
+            ui->lyricsView->setHtml((metadata->lyrics().isEmpty() ?
                                          "No Lyrics" : metadata->lyrics()));
 
             // update title
@@ -283,6 +291,14 @@ void MPMainWindow::set_loading_visibility(bool visible)
     loading_animation->setStartValue(visible ? 0 : 40);
     loading_animation->setEndValue(visible ? 40 : 0);
     loading_animation->start();
+}
+
+void MPMainWindow::set_lyric_download_visibility(bool visible)
+{
+    lyric_fetch_animation->stop();
+    lyric_fetch_animation->setStartValue(visible ? 0 : 17);
+    lyric_fetch_animation->setEndValue(visible ? 17 : 0);
+    lyric_fetch_animation->start();
 }
 
 void MPMainWindow::durationChanged(qint64 duration)
@@ -451,14 +467,7 @@ void MPMainWindow::deletePlaylistItem()
 
 void MPMainWindow::toggle_lyric_frame(bool active)
 {
-    if (active)
-    {
-        set_lyric_frame_visibility(true);
-    }
-    else
-    {
-        set_lyric_frame_visibility(false);
-    }
+    set_lyric_frame_visibility(active);
 }
 
 void MPMainWindow::keyPressEvent(QKeyEvent *event)
@@ -480,6 +489,34 @@ void MPMainWindow::keyPressEvent(QKeyEvent *event)
     }
 }
 
+void MPMainWindow::download_lyrics()
+{
+    if (player->currentMedia() != NULL && !lyric_fetcher.downloading())
+    {
+        // get metadata index
+        int index = player->playlist()->currentIndex();
+        MPMetadata *metadata = model->metadata()->at(index);
+
+        if (metadata != NULL)
+        {
+            // show the lyric fetch indicator
+            set_lyric_download_visibility(true);
+
+            // start the lyric downloader
+            lyric_fetcher.fetch(metadata);
+        }
+    }
+}
+
+void MPMainWindow::lyrics_downloaded(QString lyrics)
+{
+    // update lyrics view
+    ui->lyricsView->setHtml(lyrics);
+
+    // hide the lyric fetch indicator
+    set_lyric_download_visibility(false);
+}
+
 MPMainWindow::~MPMainWindow()
 {
     // stop player
@@ -493,6 +530,7 @@ MPMainWindow::~MPMainWindow()
     delete loading_animation;
     delete lyric_frame_animation;
     delete lyric_frame_animation2;
+    delete lyric_fetch_animation;
 
     delete player;
     delete model;
