@@ -1,5 +1,4 @@
 #include "mplyricfetcher.h"
-#include <QDebug>
 
 MPLyricFetcher::MPLyricFetcher(QObject *parent)
     : QObject(parent)
@@ -24,9 +23,26 @@ void MPLyricFetcher::fetch(MPMetadata *metadata)
         // set target metadata
         this->_metadata = metadata;
 
+        // prepare arguments
+        QString title = metadata->title();
+        title.remove(QRegularExpression("[^A-Za-z0-9\\ ]"));
+
+        // remove file extensions from the title
+        foreach (QString extension, file_extensions)
+            title.remove(extension);
+
+        QString artist = metadata->artist();
+        artist.remove(QRegularExpression("[^A-Za-z0-9\\ ]"));
+
+        // prepare whitespace(s)
+        title = title.replace(" ", "+");
+        artist = artist.replace(" ", "+");
+
+        QString url_body = "https://search.azlyrics.com/search.php?q="
+                + title + "+" + artist;
+
         // download URL
-        QUrl target_url(QString("https://search.azlyrics.com/search.php?q=%1+%2").arg(
-                            metadata->title()).arg(metadata->artist()));
+        QUrl target_url(url_body);
 
         // set downloading flag
         this->is_downloading = true;
@@ -34,6 +50,11 @@ void MPLyricFetcher::fetch(MPMetadata *metadata)
         // send download request
         this->download(target_url);
     }
+}
+
+void MPLyricFetcher::set_file_extensions(QStringList file_extensions)
+{
+    this->file_extensions = file_extensions;
 }
 
 bool MPLyricFetcher::downloading()
@@ -147,7 +168,7 @@ void MPLyricFetcher::download(QUrl url)
     QNetworkRequest request(url);
 
     // set user agent
-    request.setRawHeader("User-Agent", "LyricParse 1.0");
+    request.setRawHeader("User-Agent", "Minuet Lyric Fetcher 1.0");
 
     // execute our request
     manager.get(request);

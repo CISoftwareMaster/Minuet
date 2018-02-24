@@ -7,17 +7,14 @@ MPMetadataAnalysisThread::MPMetadataAnalysisThread(QObject *parent)
     _initialised = false;
     _started = false;
 
-    // current index in the playlist
-    current_index = 0;
-
     // index for analysis
     analysis_index = 0;
 
     // allocate memory for a list of metadata objects
     _metadata = new QList<MPMetadata *>;
 
-    // point to null by default
-    _player = nullptr;
+    playlist = new QMediaPlaylist;
+    _player = new QMediaPlayer;
 }
 
 void MPMetadataAnalysisThread::dealloc()
@@ -32,6 +29,10 @@ void MPMetadataAnalysisThread::dealloc()
 
     // deallocate metadata list
     delete _metadata;
+
+    // deallocate temp player
+    delete _player;
+    delete playlist;
 }
 
 void MPMetadataAnalysisThread::begin(QMediaPlayer *player)
@@ -39,7 +40,10 @@ void MPMetadataAnalysisThread::begin(QMediaPlayer *player)
     // initialise
     if (!_initialised)
     {
-        _player = player;
+        _player->setVolume(0);
+        _player->setAudioRole(QAudio::AccessibilityRole);
+        _player->setPlaylist(playlist);
+
         // handle analytics
         connect(_player, SIGNAL(metaDataAvailableChanged(bool)),
                 this, SLOT(metadata_update(bool)));
@@ -47,12 +51,14 @@ void MPMetadataAnalysisThread::begin(QMediaPlayer *player)
         _initialised = true;
     }
 
-    // update data
-    _player_state = _player->state();
-    _player_position = _player->position();
+    // clear playlist
+    playlist->clear();
 
-    // stop player
-    _player->stop();
+    // copy playlist
+    for (int i = 0, l = player->playlist()->mediaCount(); i < l; ++i)
+        playlist->addMedia(player->playlist()->media(i));
+
+    playlist->setCurrentIndex(0);
 
     // stop this thread (if it's already running)
     if (this->isRunning())
@@ -182,26 +188,17 @@ void MPMetadataAnalysisThread::metadata_update(bool available)
         // move to the next item
         _player->playlist()->setCurrentIndex(analysis_index);
         _player->play();
-        _player->stop();
 
         if (analysis_index == _player->playlist()->mediaCount())
         {
-            // restore playlist state
-            _player->playlist()->setCurrentIndex(current_index);
-
             // send analysis data
             emit analysis_complete(_metadata);
 
-            // restore player state
-            if (_player_state == QMediaPlayer::PlayingState)
-            {
-                _player->setPosition(_player_position);
-                _player->play();
-            }
+            _player->stop();
+            _started = false;
 
             // stop thread
             this->quit();
-            _started = false;
         }
 
         // increment analysis index
@@ -212,12 +209,9 @@ void MPMetadataAnalysisThread::metadata_update(bool available)
 void MPMetadataAnalysisThread::run()
 {
     // update index
-    current_index = _player->playlist()->currentIndex();
-
     analysis_index = _metadata->length() + 1;
     _player->playlist()->setCurrentIndex(analysis_index - 1);
 
     // begin analysis
     _player->play();
-    _player->stop();
 }

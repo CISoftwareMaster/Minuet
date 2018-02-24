@@ -16,6 +16,7 @@
 #include "mpplaylisttableviewmodel.h"
 #include "mpmetadataanalysisthread.h"
 #include "mplyricfetcher.h"
+#include "mpsonginfoeditor.h"
 
 namespace Ui {
 class MPMainWindow;
@@ -50,6 +51,8 @@ private slots:
     void toggle_lyric_frame(bool);
     void download_lyrics();
     void lyrics_downloaded(QString lyrics);
+    void edit_song();
+    void edit_finished();
 
 private:
     QModelIndex selected_item;
@@ -69,6 +72,8 @@ private:
 
     MPMetadataAnalysisThread thread;
     MPLyricFetcher lyric_fetcher;
+
+    MPSongInfoEditor *info_editor;
 
     void keyPressEvent(QKeyEvent *event) override;
 

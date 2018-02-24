@@ -26,17 +26,13 @@ void MPPlaylistTableVIewModel::shift_items(int x, int y)
 
     if (x >= 0 && y >= 0 && x < metadata()->length() && y < metadata()->length())
     {
-        // cancel, if we're swapping the same row
+        // cancel, if we're shifting the same row
         if (x != y)
         {
             // store current player state
             int player_position = player_ref->position();
             int playlist_index = _playlist->currentIndex();
             int player_state = player_ref->state();
-
-            // perform shift
-            _metadata->move(x, y);
-            _playlist->moveMedia(x, y);
 
             // update playlist index
             if (playlist_index == x)
@@ -51,6 +47,10 @@ void MPPlaylistTableVIewModel::shift_items(int x, int y)
                 _playlist->setCurrentIndex(playlist_index+1);
             else
                 _playlist->setCurrentIndex(playlist_index);
+
+            // perform shift
+            _metadata->move(x, y);
+            _playlist->moveMedia(x, y);
 
             // restore state
             if (player_state == QMediaPlayer::PlayingState)
@@ -121,8 +121,8 @@ QVariant MPPlaylistTableVIewModel::data(const QModelIndex &index, int role) cons
                 case 0: return metadata->track_number(); break;
                 case 1: return metadata->title(); break;
                 case 2: return metadata->artist(); break;
-                case 3: return metadata->album(); break;
-                case 4: return metadata->album_artist(); break;
+                case 3: return metadata->album_artist(); break;
+                case 4: return metadata->album(); break;
                 case 5: return metadata->year(); break;
                 case 6: return metadata->genre(); break;
             }
@@ -141,8 +141,8 @@ QVariant MPPlaylistTableVIewModel::headerData(int section, Qt::Orientation orien
             case 0: return "Track #"; break;
             case 1: return "Title"; break;
             case 2: return "Artist"; break;
-            case 3: return "Album"; break;
-            case 4: return "Album Artist"; break;
+            case 3: return "Album Artist"; break;
+            case 4: return "Album"; break;
             case 5: return "Year"; break;
             case 6: return "Genre"; break;
         }

@@ -23,6 +23,7 @@ DEFINES += QT_DEPRECATED_WARNINGS
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 ICON = icons/icon.png
+VERSION = 1.0
 
 SOURCES += \
         main.cpp \
@@ -32,7 +33,9 @@ SOURCES += \
     mpmetadata.cpp \
     mpfancyslider.cpp \
     mpplaylisttableview.cpp \
-    mplyricfetcher.cpp
+    mplyricfetcher.cpp \
+    mpsonginfoeditor.cpp \
+    mpimagewell.cpp
 
 HEADERS += \
         mpmainwindow.h \
@@ -41,10 +44,13 @@ HEADERS += \
     mpmetadata.h \
     mpfancyslider.h \
     mpplaylisttableview.h \
-    mplyricfetcher.h
+    mplyricfetcher.h \
+    mpsonginfoeditor.h \
+    mpimagewell.h
 
 FORMS += \
-        mpmainwindow.ui
+        mpmainwindow.ui \
+    mpsonginfoeditor.ui
 
 RESOURCES += \
     resources.qrc

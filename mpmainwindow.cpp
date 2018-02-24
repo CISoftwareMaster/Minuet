@@ -11,6 +11,9 @@ MPMainWindow::MPMainWindow(QWidget *parent) :
     // supported extensions for file drop
     drop_file_extensions = QStringList({"ogg", "mp3", "m4a", "webm", "flac"});
 
+    // set file extensions for the lyric fetcher
+    lyric_fetcher.set_file_extensions(drop_file_extensions);
+
     // hide the current song information box
     ui->currentSongInfo->setMaximumHeight(0);
 
@@ -37,6 +40,9 @@ MPMainWindow::MPMainWindow(QWidget *parent) :
     ui->playlistView->horizontalHeader()->setSectionResizeMode(3, QHeaderView::Stretch);
     ui->playlistView->horizontalHeader()->setSectionResizeMode(4, QHeaderView::Fixed);
     ui->playlistView->horizontalHeader()->setSectionResizeMode(5, QHeaderView::Stretch);
+
+    // initialise the song info editor
+    info_editor = new MPSongInfoEditor;
 
     // initialise our player
     player = new QMediaPlayer;
@@ -128,6 +134,12 @@ MPMainWindow::MPMainWindow(QWidget *parent) :
 
     connect(ui->lyricsDownloadButton, SIGNAL(clicked(bool)),
             this, SLOT(download_lyrics()));
+
+    connect(ui->actionEditInfo, SIGNAL(triggered(bool)),
+            this, SLOT(edit_song()));
+
+    connect(info_editor, SIGNAL(editing_finished()),
+            this, SLOT(edit_finished()));
 
     // initialise animations
     song_info_animation = new QPropertyAnimation(ui->currentSongInfo, "maximumHeight");
@@ -518,6 +530,33 @@ void MPMainWindow::lyrics_downloaded(QString lyrics)
     set_lyric_download_visibility(false);
 }
 
+void MPMainWindow::edit_song()
+{
+    int index = player->playlist()->currentIndex();
+
+    // check if there is an active song
+    if (index >= 0 && index < model->metadata()->length())
+    {
+        MPMetadata *metadata = model->metadata()->at(index);
+
+        //  move the song info editor closer to our main window
+        float position = round((x() + width())/2.0f);
+        info_editor->move(QPoint(position, y()));
+
+        // show the song info editor
+        info_editor->edit(metadata);
+    }
+}
+
+void MPMainWindow::edit_finished()
+{
+    // send update signal
+    emit model->layoutChanged();
+
+    // update media
+    mediaChanged(player->currentMedia());
+}
+
 MPMainWindow::~MPMainWindow()
 {
     // stop player
@@ -533,6 +572,7 @@ MPMainWindow::~MPMainWindow()
     delete lyric_frame_animation2;
     delete lyric_fetch_animation;
 
+    delete info_editor;
     delete player;
     delete model;
     delete ui;

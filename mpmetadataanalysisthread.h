@@ -24,15 +24,12 @@ public:
 
 private:
     QList<MPMetadata *> *_metadata;
+    QMediaPlaylist *playlist;
     QMediaPlayer *_player;
     QImage load_image(QString url);
-    int current_index;
     int analysis_index;
     bool _initialised;
     bool _started;
-
-    int _player_state;
-    qint64 _player_position;
 
 public slots:
     void metadata_update(bool);

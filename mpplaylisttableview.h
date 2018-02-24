@@ -6,6 +6,7 @@
 #include <QMouseEvent>
 #include <QResizeEvent>
 #include <QWheelEvent>
+#include <QContextMenuEvent>
 #include <QTableView>
 #include <QHeaderView>
 #include <QPaintEvent>

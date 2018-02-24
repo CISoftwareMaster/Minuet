@@ -110,7 +110,8 @@ void MPMetadata::set_genre(QString genre)
 
 void MPMetadata::set_lyrics(QString lyrics)
 {
-    _lyrics = lyrics;
+    // convert newlines to breaks
+    _lyrics = lyrics.replace("\n", "<br>");
 }
 
 void MPMetadata::set_image(QPixmap image)

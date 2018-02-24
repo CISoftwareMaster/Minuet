@@ -16,6 +16,7 @@ public:
 
     void fetch(MPMetadata *metadata);
     bool downloading();
+    void set_file_extensions(QStringList file_extensions);
 
 private:
     QNetworkAccessManager manager;
@@ -27,6 +28,7 @@ private:
     // regular expressions
     QRegularExpression link_pattern;
     QRegularExpression href_pattern;
+    QStringList file_extensions;
 
 private slots:
     void download_finished(QNetworkReply *reply);
