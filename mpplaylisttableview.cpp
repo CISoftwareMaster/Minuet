@@ -157,7 +157,7 @@ void MPPlaylistTableView::paintEvent(QPaintEvent *e)
 
             // highlight the drag target object
             painter.fillRect(QRect(0, position_target, width(), rowHeight(0)),
-                             QColor(80, 125, 85, 200));
+                             QColor(80, 125, 255, 200));
         }
 
         painter.end();

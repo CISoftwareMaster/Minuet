@@ -241,6 +241,17 @@
    <header>mpbutton.h</header>
   </customwidget>
  </customwidgets>
+ <tabstops>
+  <tabstop>songTitle</tabstop>
+  <tabstop>artistName</tabstop>
+  <tabstop>genre</tabstop>
+  <tabstop>album</tabstop>
+  <tabstop>albumArtist</tabstop>
+  <tabstop>year</tabstop>
+  <tabstop>lyrics</tabstop>
+  <tabstop>cancelBtn</tabstop>
+  <tabstop>doneBtn</tabstop>
+ </tabstops>
  <resources>
   <include location="resources.qrc"/>
  </resources>

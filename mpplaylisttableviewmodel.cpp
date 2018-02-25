@@ -34,6 +34,10 @@ void MPPlaylistTableVIewModel::shift_items(int x, int y)
             int playlist_index = _playlist->currentIndex();
             int player_state = player_ref->state();
 
+            // perform shift
+            _metadata->move(x, y);
+            _playlist->moveMedia(x, y);
+
             // update playlist index
             if (playlist_index == x)
                 _playlist->setCurrentIndex(y);
@@ -47,10 +51,6 @@ void MPPlaylistTableVIewModel::shift_items(int x, int y)
                 _playlist->setCurrentIndex(playlist_index+1);
             else
                 _playlist->setCurrentIndex(playlist_index);
-
-            // perform shift
-            _metadata->move(x, y);
-            _playlist->moveMedia(x, y);
 
             // restore state
             if (player_state == QMediaPlayer::PlayingState)
