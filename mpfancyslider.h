@@ -8,11 +8,18 @@
 #include <QPainter>
 #include <QMouseEvent>
 
+enum MPFancySliderType
+{
+    MPFancySeekSlider,
+    MPFancyNormalSlider
+};
+
 class MPFancySlider : public QSlider
 {
     Q_OBJECT
 public:
     MPFancySlider(QWidget *parent = NULL);
+    MPFancySliderType slider_type;
 
 private:
     void mousePressEvent(QMouseEvent *event) override;
@@ -20,7 +27,6 @@ private:
     void mouseReleaseEvent(QMouseEvent *event) override;
     void paintEvent(QPaintEvent *event) override;
     bool _dragging = false;
-    int half_height;
 };
 
 #endif // MPFANCYSLIDER_H

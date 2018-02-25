@@ -7,9 +7,6 @@ MPSongInfoEditor::MPSongInfoEditor(QWidget *parent) :
 {
     ui->setupUi(this);
 
-    // point the image well's parent to its scroll area
-    ui->albumArt->set_mparent(ui->albumArtScrollArea);
-
     // handle connection(s)
     connect(ui->doneBtn, SIGNAL(clicked(bool)),
             this, SLOT(finish_editing()));
@@ -30,7 +27,7 @@ void MPSongInfoEditor::edit(MPMetadata *metadata)
     ui->genre->setText(metadata->genre());
     ui->albumArtist->setText(metadata->album_artist());
     ui->year->setText(metadata->year());
-    ui->lyrics->setText(metadata->lyrics());
+    ui->lyrics->setHtml(metadata->lyrics());
     ui->albumArt->set_image(metadata->image());
 
     this->show();

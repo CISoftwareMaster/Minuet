@@ -13,6 +13,12 @@ MPPlaylistTableView::MPPlaylistTableView(QWidget *parent)
     model_ref = NULL;
     scroll_position = 0;
 
+    // update palette
+    QPalette npalette = palette();
+    npalette.setColor(QPalette::AlternateBase, QColor(230, 230, 230));
+    npalette.setColor(QPalette::Highlight, QColor(50, 125, 255));
+    setPalette(npalette);
+
     // allow mouse tracking
     setMouseTracking(true);
 }

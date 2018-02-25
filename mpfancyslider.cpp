@@ -5,7 +5,9 @@ MPFancySlider::MPFancySlider(QWidget *parent)
     : QSlider(parent)
 {
     _dragging = false;
-    half_height = height()/2;
+
+    // set slider type
+    slider_type = MPFancyNormalSlider;
 
     // enable mouse tracking
     setMouseTracking(true);
@@ -21,7 +23,7 @@ void MPFancySlider::mousePressEvent(QMouseEvent *event)
         _dragging = true;
 
         // move value to the selected point
-        double position = (maximum() * ((double)event->x() / (double)width()));
+        double position = minimum() + ((double)event->x()/width()) * (maximum()-minimum());
         setValue(fabs(position));
 
         // update user interface
@@ -47,9 +49,8 @@ void MPFancySlider::mouseMoveEvent(QMouseEvent *event)
     if (event->buttons() == Qt::LeftButton)
     {
         // update value
-        double position = (maximum() * ((double)event->x() / (double)width()));
+        double position = minimum() + ((double)event->x()/width()) * (maximum()-minimum());
         setValue(fabs(position));
-
         repaint();
     }
 }
@@ -64,20 +65,45 @@ void MPFancySlider::paintEvent(QPaintEvent *)
         // enable antialiased rendering
         painter.setRenderHint(QPainter::Antialiasing);
 
-        // draw track
-        painter.setBrush(QBrush(QColor(150, 150, 150)));
-        painter.drawRect(QRect(0, 0, width(), height()));
+        QColor fill_color = QColor(50, 125, 255);
+        double position = (((double)value()-minimum())/
+                           ((double)maximum()-minimum())) * width();
 
-        // draw fill
-        if (value() != 0 && maximum() != 0)
+        if (slider_type == MPFancyNormalSlider)
         {
-            double position = width() * ((double)value()/(double)maximum());
-            painter.setBrush(QBrush(QColor(255, 255, 255)));
-            painter.drawRect(QRect(0, 0, fabs(position), height()));
+            // draw track
+            painter.setPen(QColor(150, 150, 150));
+            painter.setBrush(QBrush(QColor(150, 150, 150)));
+            painter.drawRect(QRect(0, (height()/2)-1, width(), 3));
+
+            // draw fill
+            painter.setPen(fill_color.darker(110));
+            painter.setBrush(QBrush(fill_color));
+            painter.drawRect(QRect(0, (height()/2)-1, fabs(position), 3));
 
             // draw handle
-            if (_dragging)
-                painter.drawEllipse(fabs(position)-8, 0, half_height, half_height);
+            painter.drawEllipse(fabs(position)-8, 3, height()-6, height()-6);
+        }
+        else if (slider_type == MPFancySeekSlider)
+        {
+            // draw track
+            painter.setBrush(QBrush(QColor(200, 200, 200)));
+            painter.drawRect(QRect(0, 0, width(), height()));
+
+            // draw fill
+            if (value() != 0 && maximum() != 0)
+            {
+                painter.setPen(fill_color.darker(105));
+                painter.setBrush(QBrush(fill_color));
+                painter.drawRect(QRect(0, 0, fabs(position), height()));
+
+                // draw handle
+                if (_dragging)
+                {
+                    painter.setBrush(QBrush(fill_color.lighter(130)));
+                    painter.drawEllipse(fabs(position)-8, 0, height(), height());
+                }
+            }
         }
 
         painter.end();

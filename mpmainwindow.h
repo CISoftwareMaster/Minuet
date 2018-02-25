@@ -18,6 +18,8 @@
 #include "mplyricfetcher.h"
 #include "mpsonginfoeditor.h"
 
+#define ANIMATION_SPEED 500
+
 namespace Ui {
 class MPMainWindow;
 }

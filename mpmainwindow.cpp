@@ -8,6 +8,9 @@ MPMainWindow::MPMainWindow(QWidget *parent) :
 {
     ui->setupUi(this);
 
+    // set slider type
+    ui->seekSlider->slider_type = MPFancySeekSlider;
+
     // supported extensions for file drop
     drop_file_extensions = QStringList({"ogg", "mp3", "m4a", "webm", "flac"});
 
@@ -27,7 +30,7 @@ MPMainWindow::MPMainWindow(QWidget *parent) :
     ui->lyricsView->verticalScrollBar()->hide();
 
     // hide the lyric fetch label indicator
-    ui->lyricsDownloadLabel->setMaximumHeight(0);
+    ui->lyricsDownloadLabelFrame->setMaximumHeight(0);
 
     // initialise our model then assign it to our playlist view
     model = new MPPlaylistTableVIewModel;
@@ -146,10 +149,19 @@ MPMainWindow::MPMainWindow(QWidget *parent) :
     loading_animation = new QPropertyAnimation(ui->loadingIndicator, "maximumHeight");
     lyric_frame_animation = new QPropertyAnimation(ui->lyricsFrame, "maximumWidth");
     lyric_frame_animation2 = new QPropertyAnimation(ui->lyricsFrame, "minimumWidth");
-    lyric_fetch_animation = new QPropertyAnimation(ui->lyricsDownloadLabel, "minimumHeight");
+    lyric_fetch_animation = new QPropertyAnimation(ui->lyricsDownloadLabelFrame, "maximumHeight");
 
-    song_info_animation->setDuration(250);
-    loading_animation->setDuration(250);
+    song_info_animation->setDuration(ANIMATION_SPEED + 150);
+    loading_animation->setDuration(ANIMATION_SPEED);
+    lyric_frame_animation->setDuration(ANIMATION_SPEED);
+    lyric_frame_animation2->setDuration(ANIMATION_SPEED);
+    lyric_fetch_animation->setDuration(ANIMATION_SPEED);
+
+    song_info_animation->setEasingCurve(QEasingCurve::OutBounce);
+    lyric_frame_animation->setEasingCurve(QEasingCurve::InOutExpo);
+    lyric_frame_animation2->setEasingCurve(QEasingCurve::InOutExpo);
+    loading_animation->setEasingCurve(QEasingCurve::InOutCubic);
+    lyric_fetch_animation->setEasingCurve(QEasingCurve::InOutCubic);
 }
 
 void MPMainWindow::dragEnterEvent(QDragEnterEvent *event)
@@ -308,8 +320,8 @@ void MPMainWindow::set_loading_visibility(bool visible)
 void MPMainWindow::set_lyric_download_visibility(bool visible)
 {
     lyric_fetch_animation->stop();
-    lyric_fetch_animation->setStartValue(visible ? 0 : 17);
-    lyric_fetch_animation->setEndValue(visible ? 17 : 0);
+    lyric_fetch_animation->setStartValue(visible ? 0 : 40);
+    lyric_fetch_animation->setEndValue(visible ? 40 : 0);
     lyric_fetch_animation->start();
 }
 
@@ -360,7 +372,7 @@ void MPMainWindow::seekSliderChanged(int seek)
         position = position * ui->lyricsView->verticalScrollBar()->maximum();
 
         ui->lyricsView->verticalScrollBar()->setValue(
-                    ui->lyricsDelaySlider->value() + position);
+                    ui->lyricsDelaySlider->value() + (position-300));
     }
 }
 
@@ -443,7 +455,7 @@ void MPMainWindow::addToPlaylist(QStringList filenames)
 
 void MPMainWindow::deletePlaylistItem()
 {
-    QModelIndex index = ui->playlistView->selectionModel()->selection().indexes().first();
+    QModelIndex index = ui->playlistView->currentIndex();
 
     if (index.row() >= 0 && index.row() < model->metadata()->length())
     {
@@ -532,9 +544,9 @@ void MPMainWindow::lyrics_downloaded(QString lyrics)
 
 void MPMainWindow::edit_song()
 {
-    int index = player->playlist()->currentIndex();
+    int index = ui->playlistView->currentIndex().row();
 
-    // check if there is an active song
+    // check if the currently selected song is within the bounds of our metadata list
     if (index >= 0 && index < model->metadata()->length())
     {
         MPMetadata *metadata = model->metadata()->at(index);

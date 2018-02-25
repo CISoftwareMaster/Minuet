@@ -92,8 +92,11 @@ void MPImageWell::paintEvent(QPaintEvent *)
                 int h = mparent->height();
 
                 painter.drawText(QRect(x, y, w, h),
-                                 Qt::AlignCenter, "Update album cover art.");
+                                 Qt::AlignCenter, "Update cover art.");
             }
+            else
+                painter.drawText(QRect(0, 0, width(), height()),
+                                 Qt::AlignCenter, "Update cover art.");
         }
 
         painter.end();
@@ -114,10 +117,6 @@ void MPImageWell::set_image(QPixmap pixmap)
 {
     // update image
     _image = pixmap;
-
-    // resize this widget
-    setMinimumSize(pixmap.width(), pixmap.height());
-    setMaximumSize(pixmap.width(), pixmap.height());
 
     // update user interface
     repaint();
