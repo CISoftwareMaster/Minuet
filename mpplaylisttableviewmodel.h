@@ -18,6 +18,8 @@ public:
     QList<MPMetadata *> *metadata();
 
     void set_updating(bool updating);
+    void set_playlist(QMediaPlaylist *playlist);
+    void set_metadata(QList<MPMetadata *> *metadata);
     bool updating();
     void shift_items(int x, int y);
     void set_player_reference(QMediaPlayer *ref);

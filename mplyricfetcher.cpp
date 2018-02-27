@@ -134,8 +134,23 @@ void MPLyricFetcher::download_finished(QNetworkReply *reply)
 
                     if (!lyrics.isEmpty())
                     {
+                        QString lyric_filename = _metadata->filename().append(".lyrics");
                         _metadata->set_lyrics(lyrics);
                         found_lyricbody = true;
+
+                        // check if the lyric file is missing
+                        if (!QFileInfo::exists(lyric_filename))
+                        {
+                            // write the lyric file
+                            QFile lyric_file(lyric_filename);
+
+                            if (lyric_file.open(QIODevice::WriteOnly))
+                            {
+                                QTextStream stream(&lyric_file);
+                                stream << lyrics;
+                                lyric_file.close();
+                            }
+                        }
 
                         // send finished signal
                         emit fetch_finished(lyrics);

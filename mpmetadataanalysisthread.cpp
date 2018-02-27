@@ -10,25 +10,21 @@ MPMetadataAnalysisThread::MPMetadataAnalysisThread(QObject *parent)
     // index for analysis
     analysis_index = 0;
 
-    // allocate memory for a list of metadata objects
-    _metadata = new QList<MPMetadata *>;
+    // point to null by default
+    _metadata = NULL;
 
     playlist = new QMediaPlaylist;
     _player = new QMediaPlayer;
 }
 
+void MPMetadataAnalysisThread::set_metadata_list(QList<MPMetadata *> *metadata)
+{
+    _metadata = metadata;
+}
+
 void MPMetadataAnalysisThread::dealloc()
 {
     this->quit();
-
-    // deallocate metadata item pointers
-    for (int i = 0, l = _metadata->length(); i < l; ++i)
-    {
-        delete _metadata->at(i);
-    }
-
-    // deallocate metadata list
-    delete _metadata;
 
     // deallocate temp player
     delete _player;
@@ -86,10 +82,9 @@ void MPMetadataAnalysisThread::metadata_update(bool available)
 {
     if (available && _started && (analysis_index == _metadata->length() + 1))
     {
+        QFileInfo info(_player->currentMedia().canonicalUrl().toString());
         // get the base URL
-        QStringList base_url_l = _player->currentMedia().canonicalUrl().toString().split("/");
-        base_url_l.removeLast();
-        QString base_url = base_url_l.join("/").replace("file://", "");
+        QString base_url = info.path().replace("file://", "");
 
         // get metadata
         MPMetadata *item = new MPMetadata;
@@ -100,6 +95,7 @@ void MPMetadataAnalysisThread::metadata_update(bool available)
         item->set_album_artist(_player->metaData(QMediaMetaData::AlbumArtist).toString());
         item->set_year(_player->metaData(QMediaMetaData::Year).toString());
         item->set_genre(_player->metaData(QMediaMetaData::Genre).toString());
+        item->set_filename(base_url + "/" + info.baseName());
 
         // try to load its lyrics
         QString lyrics = _player->metaData(QMediaMetaData::Lyrics).toString();
@@ -107,9 +103,7 @@ void MPMetadataAnalysisThread::metadata_update(bool available)
         if (lyrics.isEmpty())
         {
             // load its lyric file (if its available)
-            QStringList title_s = _player->currentMedia().canonicalUrl().fileName().split(".");
-            title_s.removeLast();
-            QString title = base_url + "/" + title_s.join(".") + ".lyrics";
+            QString title = item->filename() + ".lyrics";
             QFile lyric_file(title);
 
             if (lyric_file.open(QIODevice::ReadOnly))
@@ -125,7 +119,7 @@ void MPMetadataAnalysisThread::metadata_update(bool available)
 
         // if the title string is empty, use its filename instead
         if (item->title().isEmpty())
-            item->set_title(_player->currentMedia().canonicalUrl().fileName());
+            item->set_title(info.baseName());
 
         // try to load the cover art
         QPixmap cover_art = QPixmap(_player->metaData(QMediaMetaData::CoverArtImage).toByteArray());
@@ -150,25 +144,12 @@ void MPMetadataAnalysisThread::metadata_update(bool available)
             {
                 // try to find "folder" or "cover" images
 
-                QStringList c_art_names;
-                c_art_names.append("cover.jpg");
-                c_art_names.append("cover.jpeg");
-                c_art_names.append("cover.png");
-                c_art_names.append("album.jpg");
-                c_art_names.append("album.jpeg");
-                c_art_names.append("album.png");
-                c_art_names.append("folder.jpg");
-                c_art_names.append("folder.jpeg");
-                c_art_names.append("folder.png");
-                c_art_names.append("Cover.jpg");
-                c_art_names.append("Cover.jpeg");
-                c_art_names.append("Cover.png");
-                c_art_names.append("Album.jpg");
-                c_art_names.append("Album.jpeg");
-                c_art_names.append("Album.png");
-                c_art_names.append("Folder.jpg");
-                c_art_names.append("Folder.jpeg");
-                c_art_names.append("Folder.png");
+                QStringList c_art_names = QStringList({"cover.jpg", "cover.jpeg",
+                        "cover.png", "album.jpg", "album.jpeg", "album.png",
+                        "folder.jpg", "folder.jpeg", "folder.png", "Cover.jpg",
+                        "Cover.jpeg", "Cover.png", "Album.jpg", "Album.jpeg", "Album.png",
+                        "Folder.jpg", "Folder.jpeg", "Folder.png"
+                });
 
                 foreach (QString name, c_art_names)
                 {

@@ -20,6 +20,7 @@ public:
     QString year();
     QString genre();
     QString lyrics();
+    QString filename();
     QPixmap image();
 
     void set_track_number(QString track_number);
@@ -31,6 +32,7 @@ public:
     void set_year(QString year);
     void set_genre(QString genre);
     void set_lyrics(QString lyrics);
+    void set_filename(QString filename);
     void set_image(QPixmap image);
 private:
     QString _duration;
@@ -42,6 +44,7 @@ private:
     QString _year;
     QString _genre;
     QString _lyrics;
+    QString _filename;
     QPixmap _image;
 };
 

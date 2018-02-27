@@ -11,6 +11,7 @@
 #include <QMediaPlaylist>
 #include <QMediaMetaData>
 #include <QTextStream>
+#include <QFileInfo>
 #include "mpmetadata.h"
 
 class MPMetadataAnalysisThread : public QThread
@@ -21,6 +22,7 @@ public:
     void dealloc();
 
     void begin(QMediaPlayer *player);
+    void set_metadata_list(QList<MPMetadata *> *metadata);
 
 private:
     QList<MPMetadata *> *_metadata;

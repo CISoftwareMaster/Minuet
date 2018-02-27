@@ -17,6 +17,8 @@
 #include "mpmetadataanalysisthread.h"
 #include "mplyricfetcher.h"
 #include "mpsonginfoeditor.h"
+#include "mpplaylistlibraryview.h"
+#include "mpplaylistlibrarymodel.h"
 
 #define ANIMATION_SPEED 500
 
@@ -55,6 +57,7 @@ private slots:
     void lyrics_downloaded(QString lyrics);
     void edit_song();
     void edit_finished();
+    void model_changed();
 
 private:
     QModelIndex selected_item;
@@ -66,18 +69,22 @@ private:
     QPropertyAnimation *loading_animation;
     QPropertyAnimation *lyric_fetch_animation;
 
+    QMediaPlayer *player = NULL;
     Ui::MPMainWindow *ui;
-    QMediaPlayer *player;
-    MPPlaylistTableVIewModel *model;
     QFileDialog add_dialog;
     qint64 _seek_previous;
+
+    MPPlaylistTableVIewModel *model;
+    MPPlaylistLibraryModel *library_model;
 
     MPMetadataAnalysisThread thread;
     MPLyricFetcher lyric_fetcher;
 
     MPSongInfoEditor *info_editor;
+    MPPlaylistLibraryView *playlist_library;
 
     void keyPressEvent(QKeyEvent *event) override;
+    void resizeEvent(QResizeEvent *ev) override;
 
     // support for file drop
     QStringList drop_file_extensions;

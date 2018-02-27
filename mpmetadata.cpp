@@ -13,6 +13,7 @@ MPMetadata::MPMetadata(QObject *parent)
     _year = "";
     _genre = "";
     _lyrics = "";
+    _filename = "";
 
     // default cover
     _image = QPixmap::fromImage(QImage(":/icons/default_cover.png"));
@@ -61,6 +62,11 @@ QString MPMetadata::genre()
 QString MPMetadata::lyrics()
 {
     return _lyrics;
+}
+
+QString MPMetadata::filename()
+{
+    return _filename;
 }
 
 QPixmap MPMetadata::image()
@@ -112,6 +118,11 @@ void MPMetadata::set_lyrics(QString lyrics)
 {
     // convert newlines to breaks
     _lyrics = lyrics.replace("\n", "<br>");
+}
+
+void MPMetadata::set_filename(QString filename)
+{
+    _filename = filename;
 }
 
 void MPMetadata::set_image(QPixmap image)

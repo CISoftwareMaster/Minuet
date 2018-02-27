@@ -4,7 +4,7 @@
 #
 #-------------------------------------------------
 
-QT       += core gui multimedia network
+QT       += core gui multimedia network sql
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -35,7 +35,11 @@ SOURCES += \
     mpplaylisttableview.cpp \
     mplyricfetcher.cpp \
     mpsonginfoeditor.cpp \
-    mpimagewell.cpp
+    mpimagewell.cpp \
+    mpbutton.cpp \
+    mpplaylistlibraryview.cpp \
+    mpplaylistobject.cpp \
+    mpplaylistlibrarymodel.cpp
 
 HEADERS += \
         mpmainwindow.h \
@@ -46,11 +50,16 @@ HEADERS += \
     mpplaylisttableview.h \
     mplyricfetcher.h \
     mpsonginfoeditor.h \
-    mpimagewell.h
+    mpimagewell.h \
+    mpbutton.h \
+    mpplaylistlibraryview.h \
+    mpplaylistobject.h \
+    mpplaylistlibrarymodel.h
 
 FORMS += \
         mpmainwindow.ui \
-    mpsonginfoeditor.ui
+    mpsonginfoeditor.ui \
+    mpplaylistlibraryview.ui
 
 RESOURCES += \
     resources.qrc

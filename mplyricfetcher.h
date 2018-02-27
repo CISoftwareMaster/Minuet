@@ -5,6 +5,8 @@
 #include <QtNetwork>
 #include <QRegularExpression>
 #include <QRegularExpressionMatch>
+#include <QFileInfo>
+#include <QTextStream>
 #include "mpmetadata.h"
 
 class MPLyricFetcher : public QObject

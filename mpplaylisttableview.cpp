@@ -15,7 +15,9 @@ MPPlaylistTableView::MPPlaylistTableView(QWidget *parent)
 
     // update palette
     QPalette npalette = palette();
-    npalette.setColor(QPalette::AlternateBase, QColor(230, 230, 230));
+    npalette.setColor(QPalette::Base, QColor(255, 255, 255));
+    npalette.setColor(QPalette::Background, QColor(255, 255, 255));
+    npalette.setColor(QPalette::AlternateBase, QColor(240, 240, 240));
     npalette.setColor(QPalette::Highlight, QColor(50, 125, 255));
     setPalette(npalette);
 

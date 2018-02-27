@@ -10,7 +10,8 @@
 enum MPButtonType
 {
     MPButtonNormal,
-    MPButtonDefault
+    MPButtonDefault,
+    MPButtonTranslucent
 };
 
 class MPButton : public QPushButton
@@ -30,6 +31,13 @@ class MPDefaultButton : public MPButton
     Q_OBJECT
 public:
     MPDefaultButton(QWidget *parent) : MPButton(parent) { btn_type = MPButtonDefault; }
+};
+
+class MPTranslucentButton : public MPButton
+{
+    Q_OBJECT
+public:
+    MPTranslucentButton(QWidget *parent) : MPButton(parent) { btn_type = MPButtonTranslucent; }
 };
 
 #endif // MPBUTTON_H

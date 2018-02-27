@@ -40,6 +40,7 @@ void MPSongInfoEditor::finish_editing()
     _metadata->set_artist(ui->artistName->text());
     _metadata->set_album(ui->album->text());
     _metadata->set_genre(ui->genre->text());
+    _metadata->set_year(ui->year->text());
     _metadata->set_album_artist(ui->albumArtist->text());
     _metadata->set_lyrics(ui->lyrics->toHtml());
     _metadata->set_image(ui->albumArt->image());

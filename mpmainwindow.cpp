@@ -47,6 +47,16 @@ MPMainWindow::MPMainWindow(QWidget *parent) :
     // initialise the song info editor
     info_editor = new MPSongInfoEditor;
 
+    // initialise our playlist library widget
+    playlist_library = new MPPlaylistLibraryView(this);
+    playlist_library->set_effect_view(ui->controlFrame);
+
+    // point to the playlist library model
+    library_model = playlist_library->model();
+
+    // initial model change
+    model_changed();
+
     // initialise our player
     player = new QMediaPlayer;
     player->setAudioRole(QAudio::MusicRole);
@@ -144,6 +154,12 @@ MPMainWindow::MPMainWindow(QWidget *parent) :
     connect(info_editor, SIGNAL(editing_finished()),
             this, SLOT(edit_finished()));
 
+    connect(ui->actionPlaylists, SIGNAL(toggled(bool)),
+            playlist_library, SLOT(set_open(bool)));
+
+    connect(library_model, SIGNAL(model_changed()),
+            this, SLOT(model_changed()));
+
     // initialise animations
     song_info_animation = new QPropertyAnimation(ui->currentSongInfo, "maximumHeight");
     loading_animation = new QPropertyAnimation(ui->loadingIndicator, "maximumHeight");
@@ -162,6 +178,25 @@ MPMainWindow::MPMainWindow(QWidget *parent) :
     lyric_frame_animation2->setEasingCurve(QEasingCurve::InOutExpo);
     loading_animation->setEasingCurve(QEasingCurve::InOutCubic);
     lyric_fetch_animation->setEasingCurve(QEasingCurve::InOutCubic);
+}
+
+void MPMainWindow::model_changed()
+{
+    MPPlaylistObject *object = library_model->current_playlist();
+
+    // update pointers
+    model->set_playlist(object->playlist());
+    model->set_metadata(object->metadata());
+    thread.set_metadata_list(object->metadata());
+
+    if (player != NULL)
+    {
+        player->setPlaylist(object->playlist());
+        player->stop();
+    }
+
+    ui->playlistView->viewport()->repaint();
+    set_song_info_visibility(false);
 }
 
 void MPMainWindow::dragEnterEvent(QDragEnterEvent *event)
@@ -569,6 +604,15 @@ void MPMainWindow::edit_finished()
     mediaChanged(player->currentMedia());
 }
 
+void MPMainWindow::resizeEvent(QResizeEvent *ev)
+{
+    // update playlist library view height
+    playlist_library->update_height(height());
+
+    // handle default behaviour
+    QMainWindow::resizeEvent(ev);
+}
+
 MPMainWindow::~MPMainWindow()
 {
     // stop player
@@ -585,7 +629,7 @@ MPMainWindow::~MPMainWindow()
     delete lyric_fetch_animation;
 
     delete info_editor;
+    delete playlist_library;
     delete player;
-    delete model;
     delete ui;
 }

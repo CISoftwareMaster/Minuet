@@ -4,14 +4,24 @@
 MPPlaylistTableVIewModel::MPPlaylistTableVIewModel(QObject *parent)
     : QAbstractTableModel(parent)
 {
-    // initialise our playlist
-    this->_playlist = new QMediaPlaylist;
-    this->_playlist->setCurrentIndex(0);
+    // point to null by default
+    this->_playlist = NULL;
 
     // point to NULL by default
     this->player_ref = NULL;
     this->_metadata = NULL;
     this->_updating = false;
+}
+
+void MPPlaylistTableVIewModel::set_metadata(QList<MPMetadata *> *metadata)
+{
+    _metadata = metadata;
+}
+
+void MPPlaylistTableVIewModel::set_playlist(QMediaPlaylist *playlist)
+{
+    // update playlist pointer
+    _playlist = playlist;
 }
 
 void MPPlaylistTableVIewModel::set_player_reference(QMediaPlayer *ref)
@@ -94,11 +104,12 @@ void MPPlaylistTableVIewModel::metadata_update(QList<MPMetadata *> *metadata_ptr
 MPPlaylistTableVIewModel::~MPPlaylistTableVIewModel()
 {
     // deallocate memory used by our playlist
-    delete this->_playlist;
+    // delete this->_playlist;
 }
 
 int MPPlaylistTableVIewModel::rowCount(const QModelIndex &) const
 {
+    if (_playlist == NULL) return 0;
     return (_metadata != NULL ? _metadata->length() : _playlist->mediaCount());
 }
 
@@ -109,6 +120,8 @@ int MPPlaylistTableVIewModel::columnCount(const QModelIndex &) const
 
 QVariant MPPlaylistTableVIewModel::data(const QModelIndex &index, int role) const
 {
+    if (_playlist == NULL) return QVariant();
+
     // get current media information
     MPMetadata *metadata = _metadata->at(index.row());
 
