@@ -11,8 +11,11 @@ MPPlaylistLibraryView::MPPlaylistLibraryView(QWidget *parent)
     QPalette mpalette = ui->playlistView->palette();
     mpalette.setColor(QPalette::Highlight, QColor(150, 150, 150, 25));
     mpalette.setColor(QPalette::HighlightedText, QColor(50, 50, 50));
+    mpalette.setColor(QPalette::Background, QColor(255, 255, 255, 0));
+    mpalette.setColor(QPalette::Base, QColor(255, 255, 255, 50));
+    mpalette.setColor(QPalette::AlternateBase, QColor(200, 200, 200, 50));
     ui->playlistView->setPalette(mpalette);
-    ui->playlistView->setStyleSheet("background: rgba(255, 255, 255, 0.2)");
+    ui->playlistView->verticalScrollBar()->setMaximumWidth(4);
 
     // initialise model
     _model = new MPPlaylistLibraryModel;
@@ -126,7 +129,8 @@ void MPPlaylistLibraryView::paintEvent(QPaintEvent *ev)
 
             // draw blurred background
             if (!background.isNull())
-                painter.drawPixmap(0, 50 - Y_GAP, background.width(), background.height(), background);
+                painter.drawPixmap(0, 50 - Y_GAP, background.width(),
+                                   background.height(), background);
 
             // draw white rectangle
             painter.setBrush(QBrush(QColor(255, 255, 255, 150)));

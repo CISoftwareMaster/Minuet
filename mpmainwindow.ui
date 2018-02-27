@@ -855,7 +855,7 @@ p, li { white-space: pre-wrap; }
     <string>Show Playlist Library</string>
    </property>
    <property name="shortcut">
-    <string>Ctrl+Shift+I</string>
+    <string>Ctrl+Shift+L</string>
    </property>
   </action>
  </widget>

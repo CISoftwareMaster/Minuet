@@ -58,6 +58,8 @@ private slots:
     void edit_song();
     void edit_finished();
     void model_changed();
+    void previousSong();
+    void nextSong();
 
 private:
     QModelIndex selected_item;

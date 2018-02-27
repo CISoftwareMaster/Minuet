@@ -164,7 +164,19 @@ void MPMetadataAnalysisThread::metadata_update(bool available)
                 item->set_image(QPixmap::fromImage(cover_art_image));
         }
 
-        _metadata->append(item);
+        if (analysis_index >= 2 && analysis_index <= _metadata->length() + 1)
+        {
+            // overwrite the current index (if it's replaceable)
+            MPMetadata *current = _metadata->at(analysis_index - 2);
+
+            if (current->replaceable())
+            {
+                _metadata->replace(analysis_index - 2, item);
+                current->deleteLater();
+            }
+        }
+        else
+            _metadata->append(item);
 
         // move to the next item
         _player->playlist()->setCurrentIndex(analysis_index);

@@ -12,6 +12,7 @@
 #include <QPixmap>
 #include <QLabel>
 #include <QFrame>
+#include <QScrollBar>
 #include "mpplaylistlibrarymodel.h"
 #include "mpplaylistobject.h"
 

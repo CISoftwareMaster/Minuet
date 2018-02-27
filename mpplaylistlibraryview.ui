@@ -24,7 +24,7 @@
       </font>
      </property>
      <property name="text">
-      <string>My Playlists</string>
+      <string>My Playlist Library</string>
      </property>
     </widget>
    </item>
@@ -77,8 +77,29 @@
      <property name="frameShape">
       <enum>QFrame::NoFrame</enum>
      </property>
+     <property name="horizontalScrollBarPolicy">
+      <enum>Qt::ScrollBarAlwaysOff</enum>
+     </property>
+     <property name="showDropIndicator" stdset="0">
+      <bool>false</bool>
+     </property>
+     <property name="alternatingRowColors">
+      <bool>true</bool>
+     </property>
+     <property name="verticalScrollMode">
+      <enum>QAbstractItemView::ScrollPerPixel</enum>
+     </property>
+     <property name="movement">
+      <enum>QListView::Free</enum>
+     </property>
+     <property name="resizeMode">
+      <enum>QListView::Fixed</enum>
+     </property>
+     <property name="layoutMode">
+      <enum>QListView::SinglePass</enum>
+     </property>
      <property name="spacing">
-      <number>2</number>
+      <number>1</number>
      </property>
      <property name="selectionRectVisible">
       <bool>true</bool>

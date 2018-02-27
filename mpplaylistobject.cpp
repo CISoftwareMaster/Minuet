@@ -13,7 +13,33 @@ MPPlaylistObject::MPPlaylistObject(QObject *parent)
     _filenames = NULL;
 }
 
-QList<QUrl> *MPPlaylistObject::filenames()
+bool MPPlaylistObject::load_files()
+{
+    if (_filenames == NULL) return true;
+
+    // load songs, if this playlist is not initialised
+    if (!_initialised)
+    {
+        for (int i = 0, l = _filenames->length(); i < l; ++i)
+        {
+            QString filename = _filenames->at(i);
+
+            // load song
+            _playlist->addMedia(QUrl::fromLocalFile(filename));
+
+            // promise a metadata object value
+            MPMetadata *metaData = new MPMetadata;
+            metaData->set_replaceable(true);
+            _metadata->append(metaData);
+        }
+
+        _initialised = true;
+        return false;
+    }
+    return true;
+}
+
+QList<QString> *MPPlaylistObject::filenames()
 {
     return _filenames;
 }
@@ -43,7 +69,7 @@ void MPPlaylistObject::set_name(QString name)
     _name = name;
 }
 
-void MPPlaylistObject::set_filenames(QList<QUrl> *filenames)
+void MPPlaylistObject::set_filenames(QList<QString> *filenames)
 {
     _filenames = filenames;
 }

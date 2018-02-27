@@ -2,7 +2,9 @@
 #define MPLYRICFETCHTHREAD_H
 
 #include <QObject>
-#include <QtNetwork>
+#include <QNetworkAccessManager>
+#include <QNetworkRequest>
+#include <QNetworkReply>
 #include <QRegularExpression>
 #include <QRegularExpressionMatch>
 #include <QFileInfo>

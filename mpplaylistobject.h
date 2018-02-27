@@ -15,18 +15,19 @@ public:
 
     void set_name(QString name);
     void set_initialised(bool initialised);
-    void set_filenames(QList<QUrl> *filenames);
+    void set_filenames(QList<QString> *filenames);
+    bool load_files();
 
     QMediaPlaylist *playlist();
     QList<MPMetadata *> *metadata();
-    QList<QUrl> *filenames();
+    QList<QString> *filenames();
     QString name();
     bool initialised();
 
 private:
     QMediaPlaylist *_playlist;
     QList<MPMetadata *> *_metadata;
-    QList<QUrl> *_filenames;
+    QList<QString> *_filenames;
     QString _name;
     bool _initialised = false;
 };

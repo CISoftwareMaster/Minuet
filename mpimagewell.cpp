@@ -1,5 +1,4 @@
 #include "mpimagewell.h"
-#include <QDebug>
 
 MPImageWell::MPImageWell(QWidget *parent)
     : QWidget(parent)

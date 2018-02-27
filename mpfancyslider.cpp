@@ -1,5 +1,4 @@
 #include "mpfancyslider.h"
-#include <QDebug>
 
 MPFancySlider::MPFancySlider(QWidget *parent)
     : QSlider(parent)

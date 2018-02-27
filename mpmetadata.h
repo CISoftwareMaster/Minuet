@@ -22,6 +22,7 @@ public:
     QString lyrics();
     QString filename();
     QPixmap image();
+    bool replaceable();
 
     void set_track_number(QString track_number);
     void set_duration(QString duration);
@@ -34,6 +35,7 @@ public:
     void set_lyrics(QString lyrics);
     void set_filename(QString filename);
     void set_image(QPixmap image);
+    void set_replaceable(bool replaceable);
 private:
     QString _duration;
     QString _track_number;
@@ -46,6 +48,7 @@ private:
     QString _lyrics;
     QString _filename;
     QPixmap _image;
+    bool _replaceable;
 };
 
 #endif // MPMETADATA_H

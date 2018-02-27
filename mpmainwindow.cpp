@@ -1,6 +1,5 @@
 #include "mpmainwindow.h"
 #include "ui_mpmainwindow.h"
-#include <QDebug>
 
 MPMainWindow::MPMainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -31,6 +30,9 @@ MPMainWindow::MPMainWindow(QWidget *parent) :
 
     // hide the lyric fetch label indicator
     ui->lyricsDownloadLabelFrame->setMaximumHeight(0);
+
+    // set playlist scrollbar width
+    ui->playlistView->verticalScrollBar()->setMaximumWidth(4);
 
     // initialise our model then assign it to our playlist view
     model = new MPPlaylistTableVIewModel;
@@ -125,10 +127,10 @@ MPMainWindow::MPMainWindow(QWidget *parent) :
             this, SLOT(positionChanged(qint64)));
 
     connect(ui->actionNext, SIGNAL(triggered(bool)),
-            model->playlist(), SLOT(next()));
+            this, SLOT(nextSong()));
 
     connect(ui->actionPrevious, SIGNAL(triggered(bool)),
-            model->playlist(), SLOT(previous()));
+            this, SLOT(previousSong()));
 
     connect(ui->actionStop, SIGNAL(triggered(bool)),
             player, SLOT(stop()));
@@ -178,25 +180,52 @@ MPMainWindow::MPMainWindow(QWidget *parent) :
     lyric_frame_animation2->setEasingCurve(QEasingCurve::InOutExpo);
     loading_animation->setEasingCurve(QEasingCurve::InOutCubic);
     lyric_fetch_animation->setEasingCurve(QEasingCurve::InOutCubic);
+
+    // show an error message, if our database connection failed
+    if (!library_model->database_is_opened())
+        QMessageBox::warning(this, tr("Warning!"),
+                             tr("There was an error connecting to your playlists database!"));
+}
+
+void MPMainWindow::previousSong()
+{
+    if (player->playlist() != NULL)
+        player->playlist()->previous();
+}
+
+void MPMainWindow::nextSong()
+{
+    if (player->playlist() != NULL)
+        player->playlist()->next();
 }
 
 void MPMainWindow::model_changed()
 {
     MPPlaylistObject *object = library_model->current_playlist();
+    bool initialised = object->load_files();
+
+    // reset seek slider
+    ui->seekSlider->setValue(0);
 
     // update pointers
-    model->set_playlist(object->playlist());
-    model->set_metadata(object->metadata());
     thread.set_metadata_list(object->metadata());
+    model->set_metadata(object->metadata());
+    model->set_playlist(object->playlist());
 
+    // update player
     if (player != NULL)
     {
         player->setPlaylist(object->playlist());
         player->stop();
-    }
+        emit player->mediaChanged(player->currentMedia());
 
-    ui->playlistView->viewport()->repaint();
-    set_song_info_visibility(false);
+    }
+    // run the metadata analyser
+    if (!initialised)
+        thread.begin(this->player);
+
+    // update player
+    emit model->layoutChanged();
 }
 
 void MPMainWindow::dragEnterEvent(QDragEnterEvent *event)
@@ -464,6 +493,10 @@ void MPMainWindow::playlistUpdated()
 {
     // hide loading indicator
     set_loading_visibility(false);
+
+    // update user interface
+    emit model->layoutChanged();
+    ui->playlistView->viewport()->repaint();
 }
 
 void MPMainWindow::playlistLoadError()
@@ -538,7 +571,7 @@ void MPMainWindow::keyPressEvent(QKeyEvent *event)
     if (event->key() == Qt::Key_Return)
     {
         // get selected index
-        QModelIndex index = ui->playlistView->selectionModel()->selection().indexes().first();
+        QModelIndex index = ui->playlistView->currentIndex();
 
         if (index.row() >= 0 && index.row() < model->metadata()->length())
         {

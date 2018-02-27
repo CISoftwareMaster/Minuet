@@ -14,6 +14,7 @@ MPMetadata::MPMetadata(QObject *parent)
     _genre = "";
     _lyrics = "";
     _filename = "";
+    _replaceable = false;
 
     // default cover
     _image = QPixmap::fromImage(QImage(":/icons/default_cover.png"));
@@ -74,6 +75,11 @@ QPixmap MPMetadata::image()
     return _image;
 }
 
+bool MPMetadata::replaceable()
+{
+    return _replaceable;
+}
+
 void MPMetadata::set_track_number(QString track_number)
 {
     _track_number = track_number;
@@ -128,4 +134,9 @@ void MPMetadata::set_filename(QString filename)
 void MPMetadata::set_image(QPixmap image)
 {
     _image = image;
+}
+
+void MPMetadata::set_replaceable(bool replaceable)
+{
+    _replaceable = replaceable;
 }

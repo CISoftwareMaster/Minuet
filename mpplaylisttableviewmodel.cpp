@@ -1,5 +1,4 @@
 #include "mpplaylisttableviewmodel.h"
-#include <QDebug>
 
 MPPlaylistTableVIewModel::MPPlaylistTableVIewModel(QObject *parent)
     : QAbstractTableModel(parent)
@@ -121,6 +120,7 @@ int MPPlaylistTableVIewModel::columnCount(const QModelIndex &) const
 QVariant MPPlaylistTableVIewModel::data(const QModelIndex &index, int role) const
 {
     if (_playlist == NULL) return QVariant();
+    if (!(index.row() >= 0 && index.row() < _metadata->length())) return QVariant();
 
     // get current media information
     MPMetadata *metadata = _metadata->at(index.row());

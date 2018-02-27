@@ -1,5 +1,4 @@
 #include "mpbutton.h"
-#include <QDebug>
 
 MPButton::MPButton(QWidget *parent)
     : QPushButton(parent)
