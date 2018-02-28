@@ -21,7 +21,7 @@ public:
     MPMetadataAnalysisThread(QObject *parent = 0);
     void dealloc();
 
-    void begin(QMediaPlayer *player);
+    void begin(QMediaPlayer *player, bool full_analysis=false);
     void set_metadata_list(QList<MPMetadata *> *metadata);
 
 private:
@@ -32,6 +32,7 @@ private:
     int analysis_index;
     bool _initialised;
     bool _started;
+    bool full_analysis;
 
 public slots:
     void metadata_update(bool);

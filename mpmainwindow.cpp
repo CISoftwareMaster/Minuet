@@ -184,7 +184,7 @@ MPMainWindow::MPMainWindow(QWidget *parent) :
     // show an error message, if our database connection failed
     if (!library_model->database_is_opened())
         QMessageBox::warning(this, tr("Warning!"),
-                             tr("There was an error connecting to your playlists database!"));
+                             tr("Your playlist library database file is missing!"));
 }
 
 void MPMainWindow::previousSong()
@@ -202,7 +202,6 @@ void MPMainWindow::nextSong()
 void MPMainWindow::model_changed()
 {
     MPPlaylistObject *object = library_model->current_playlist();
-    bool initialised = object->load_files();
 
     // reset seek slider
     ui->seekSlider->setValue(0);
@@ -220,9 +219,13 @@ void MPMainWindow::model_changed()
         emit player->mediaChanged(player->currentMedia());
 
     }
+
     // run the metadata analyser
-    if (!initialised)
-        thread.begin(this->player);
+    if (!object->initialised())
+    {
+        object->load_files();
+        thread.begin(this->player, true);
+    }
 
     // update player
     emit model->layoutChanged();
@@ -271,6 +274,9 @@ void MPMainWindow::dropEvent(QDropEvent *event)
         {
             // load this file into the player
             player->playlist()->addMedia(QUrl::fromLocalFile(url_s));
+
+            // update database
+            library_model->insert_item(url_s);
 
             // increment the files loaded counter
             files_loaded ++;
@@ -514,6 +520,9 @@ void MPMainWindow::addToPlaylist(QStringList filenames)
     {
         // load files into our media player
         model->playlist()->addMedia(QUrl::fromLocalFile(filename));
+
+        // update database
+        library_model->insert_item(filename);
     }
 
     // start metadata analyser
@@ -533,6 +542,10 @@ void MPMainWindow::deletePlaylistItem()
 
         // delete playlist item
         player->playlist()->removeMedia(index.row());
+
+        // delete item from database
+        if (library_model->current_index() > 0)
+            library_model->remove_item(index.row());
 
         // delete the target row
         delete model->metadata()->at(index.row());

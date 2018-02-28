@@ -11,6 +11,7 @@ class MPMetadata : public QObject
 public:
     explicit MPMetadata(QObject *parent = nullptr);
 
+    QString iid();
     QString track_number();
     QString duration();
     QString title();
@@ -24,6 +25,7 @@ public:
     QPixmap image();
     bool replaceable();
 
+    void set_iid(QString iid);
     void set_track_number(QString track_number);
     void set_duration(QString duration);
     void set_title(QString title);
@@ -37,6 +39,7 @@ public:
     void set_image(QPixmap image);
     void set_replaceable(bool replaceable);
 private:
+    QString _iid;
     QString _duration;
     QString _track_number;
     QString _title;

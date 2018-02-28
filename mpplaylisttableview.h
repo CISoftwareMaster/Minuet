@@ -20,6 +20,7 @@ class MPPlaylistTableView : public QTableView
     Q_OBJECT
 public:
     MPPlaylistTableView(QWidget *parent = NULL);
+    void setModel(QAbstractItemModel *model) override;
     void setModel(MPPlaylistTableVIewModel *model);
     ~MPPlaylistTableView();
 

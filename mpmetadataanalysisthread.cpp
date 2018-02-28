@@ -13,6 +13,8 @@ MPMetadataAnalysisThread::MPMetadataAnalysisThread(QObject *parent)
     // point to null by default
     _metadata = NULL;
 
+    full_analysis = false;
+
     playlist = new QMediaPlaylist;
     _player = new QMediaPlayer;
 }
@@ -31,7 +33,7 @@ void MPMetadataAnalysisThread::dealloc()
     delete playlist;
 }
 
-void MPMetadataAnalysisThread::begin(QMediaPlayer *player)
+void MPMetadataAnalysisThread::begin(QMediaPlayer *player, bool full_analysis)
 {
     // initialise
     if (!_initialised)
@@ -60,6 +62,11 @@ void MPMetadataAnalysisThread::begin(QMediaPlayer *player)
     if (this->isRunning())
         this->quit();
 
+    // update index
+    analysis_index = (full_analysis ? 1 : _metadata->length() + 1);
+    _player->playlist()->setCurrentIndex((full_analysis ? 0 : analysis_index - 1));
+    this->full_analysis =  full_analysis;
+
     // start this thread
     this->start(QThread::HighPriority);
     _started = true;
@@ -80,7 +87,7 @@ QImage MPMetadataAnalysisThread::load_image(QString url)
 
 void MPMetadataAnalysisThread::metadata_update(bool available)
 {
-    if (available && _started && (analysis_index == _metadata->length() + 1))
+    if (available && _started && (full_analysis ? 1 : (analysis_index == _metadata->length() + 1)))
     {
         QFileInfo info(_player->currentMedia().canonicalUrl().toString());
         // get the base URL
@@ -164,15 +171,27 @@ void MPMetadataAnalysisThread::metadata_update(bool available)
                 item->set_image(QPixmap::fromImage(cover_art_image));
         }
 
-        if (analysis_index >= 2 && analysis_index <= _metadata->length() + 1)
+        if (full_analysis)
         {
-            // overwrite the current index (if it's replaceable)
-            MPMetadata *current = _metadata->at(analysis_index - 2);
+            int index = analysis_index - 1;
 
-            if (current->replaceable())
+            if (index < _metadata->length())
             {
-                _metadata->replace(analysis_index - 2, item);
-                current->deleteLater();
+
+                // overwrite the current index (if it's replaceable)
+                MPMetadata *current = _metadata->at(index);
+
+                if (current->replaceable())
+                {
+                    QString iid = current->iid();
+                    item->set_iid(iid);
+
+                    // update item id
+                    _metadata->replace(index, item);
+
+                    // schedule for deletion
+                    current->deleteLater();
+                }
             }
         }
         else
@@ -201,10 +220,6 @@ void MPMetadataAnalysisThread::metadata_update(bool available)
 
 void MPMetadataAnalysisThread::run()
 {
-    // update index
-    analysis_index = _metadata->length() + 1;
-    _player->playlist()->setCurrentIndex(analysis_index - 1);
-
     // begin analysis
     _player->play();
 }

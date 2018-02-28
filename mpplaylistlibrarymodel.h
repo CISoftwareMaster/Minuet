@@ -9,6 +9,7 @@
 #include <QAbstractListModel>
 #include <QList>
 #include "mpplaylistobject.h"
+#include "mpplaylistobjectgroup.h"
 #include "mpplaylistlibrarymodel.h"
 
 class MPPlaylistLibraryModel : public QAbstractListModel
@@ -24,6 +25,10 @@ public:
     bool valid_index(int index);
     bool database_is_opened();
 
+    // playlist operation(s)
+    void remove_item(int index);
+    void insert_item(QString path);
+
     void set_index(int index);
     MPPlaylistObject *create_playlist(QString name, bool initialised=false);
 
@@ -37,6 +42,8 @@ private:
 
     int rowCount(const QModelIndex &parent) const override;
     QVariant data(const QModelIndex &index, int role) const override;
+
+protected:
     QSqlDatabase database;
 };
 

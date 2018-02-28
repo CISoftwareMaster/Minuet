@@ -23,7 +23,7 @@ MPPlaylistLibraryModel::MPPlaylistLibraryModel(QObject *parent)
     {
         MPPlaylistObject *new_playlist = create_playlist(
                     query.value("name").toString());
-        QList<QString> *filenames = new QList<QString>;
+        QList<MPPlaylistObjectGroup> *items = new QList<MPPlaylistObjectGroup>;
 
         // populate playlist with URLs
         QSqlQuery url_query = database.exec("SELECT * FROM urls WHERE pid="
@@ -31,16 +31,49 @@ MPPlaylistLibraryModel::MPPlaylistLibraryModel(QObject *parent)
 
         while (url_query.next())
         {
-            qDebug() << url_query.value("url");
-            filenames->append(url_query.value("url").toString());
+            MPPlaylistObjectGroup group(url_query.value("url").toString(),
+                                        url_query.value("uid").toString());
+            items->append(group);
         }
 
         // update playlist filenames
-        new_playlist->set_filenames(filenames);
+        new_playlist->set_pid(query.value("pid").toString());
+        new_playlist->set_items(items);
+        new_playlist->playlist()->setCurrentIndex(0);
     }
 
     // default index
     index = 0;
+}
+
+void MPPlaylistLibraryModel::remove_item(int index)
+{
+    if (valid_index(current_index()))
+    {
+        MPPlaylistObject *current = playlists->at(current_index());
+
+        // delete
+        if (database.transaction())
+        {
+            // delete the targetted index
+            MPMetadata *target = current->metadata()->at(index);
+            database.exec("DELETE FROM urls WHERE uid=" + target->iid());
+
+            // save changes
+            database.commit();
+        }
+    }
+}
+
+void MPPlaylistLibraryModel::insert_item(QString path)
+{
+    if (index > 0 && database.transaction())
+    {
+        // insert filename to database
+        database.exec("INSERT INTO urls (pid,url) VALUES (" + QString(playlists->at(index)->pid())
+                      + ", \"" + path + "\")");
+        database.commit();
+    }
 }
 
 bool MPPlaylistLibraryModel::valid_index(int index)

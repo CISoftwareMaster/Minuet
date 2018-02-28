@@ -25,6 +25,11 @@ MPPlaylistTableView::MPPlaylistTableView(QWidget *parent)
     setMouseTracking(true);
 }
 
+void MPPlaylistTableView::setModel(QAbstractItemModel *model)
+{
+    QTableView::setModel(model);
+}
+
 void MPPlaylistTableView::setModel(MPPlaylistTableVIewModel *model)
 {
     // handle default behaviour

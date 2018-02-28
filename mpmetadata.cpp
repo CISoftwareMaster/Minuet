@@ -4,6 +4,7 @@ MPMetadata::MPMetadata(QObject *parent)
     : QObject(parent)
 {
     // initialise our variables with
+    _iid = "";
     _track_number = "";
     _duration = "";
     _title = "";
@@ -18,6 +19,11 @@ MPMetadata::MPMetadata(QObject *parent)
 
     // default cover
     _image = QPixmap::fromImage(QImage(":/icons/default_cover.png"));
+}
+
+QString MPMetadata::iid()
+{
+    return _iid;
 }
 
 QString MPMetadata::track_number()
@@ -78,6 +84,11 @@ QPixmap MPMetadata::image()
 bool MPMetadata::replaceable()
 {
     return _replaceable;
+}
+
+void MPMetadata::set_iid(QString iid)
+{
+    _iid = iid;
 }
 
 void MPMetadata::set_track_number(QString track_number)

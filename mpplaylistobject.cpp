@@ -10,26 +10,34 @@ MPPlaylistObject::MPPlaylistObject(QObject *parent)
 
     // initialised flag (are all files loaded?)
     _initialised = false;
-    _filenames = NULL;
+    _items = NULL;
+    _pid = "";
+}
+
+QString MPPlaylistObject::pid()
+{
+    return _pid;
 }
 
 bool MPPlaylistObject::load_files()
 {
-    if (_filenames == NULL) return true;
+    if (_items == NULL) return true;
 
     // load songs, if this playlist is not initialised
     if (!_initialised)
     {
-        for (int i = 0, l = _filenames->length(); i < l; ++i)
+        for (int i = 0, l = _items->length(); i < l; ++i)
         {
-            QString filename = _filenames->at(i);
+            MPPlaylistObjectGroup item = _items->at(i);
 
             // load song
-            _playlist->addMedia(QUrl::fromLocalFile(filename));
+            _playlist->addMedia(QUrl::fromLocalFile(item.filename()));
 
             // promise a metadata object value
             MPMetadata *metaData = new MPMetadata;
             metaData->set_replaceable(true);
+            metaData->set_iid(item.iid());
+
             _metadata->append(metaData);
         }
 
@@ -39,9 +47,9 @@ bool MPPlaylistObject::load_files()
     return true;
 }
 
-QList<QString> *MPPlaylistObject::filenames()
+QList<MPPlaylistObjectGroup> *MPPlaylistObject::items()
 {
-    return _filenames;
+    return _items;
 }
 
 QMediaPlaylist *MPPlaylistObject::playlist()
@@ -69,9 +77,14 @@ void MPPlaylistObject::set_name(QString name)
     _name = name;
 }
 
-void MPPlaylistObject::set_filenames(QList<QString> *filenames)
+void MPPlaylistObject::set_pid(QString pid)
 {
-    _filenames = filenames;
+    _pid = pid;
+}
+
+void MPPlaylistObject::set_items(QList<MPPlaylistObjectGroup> *items)
+{
+    _items = items;
 }
 
 void MPPlaylistObject::set_initialised(bool initialised)
@@ -88,6 +101,6 @@ MPPlaylistObject::~MPPlaylistObject()
     delete _metadata;
     delete _playlist;
 
-    if (_filenames != NULL)
-        delete _filenames;
+    if (_items != NULL)
+        delete _items;
 }
