@@ -11,6 +11,9 @@ MPSongInfoEditor::MPSongInfoEditor(QWidget *parent) :
     connect(ui->doneBtn, SIGNAL(clicked(bool)),
             this, SLOT(finish_editing()));
 
+    // set scrollbar size
+    ui->scrollArea->verticalScrollBar()->setMaximumWidth(4);
+
     // point to null by default
     this->_metadata = NULL;
 }
@@ -20,11 +23,15 @@ void MPSongInfoEditor::edit(MPMetadata *metadata)
     // start editing
     _metadata = metadata;
 
+    // reset scrollbar
+    ui->scrollArea->verticalScrollBar()->setValue(0);
+
     // populate our fields
     ui->songTitle->setText(metadata->title());
     ui->artistName->setText(metadata->artist());
     ui->album->setText(metadata->album());
     ui->genre->setText(metadata->genre());
+    ui->trackNumber->setValue(metadata->track_number().toInt());
     ui->albumArtist->setText(metadata->album_artist());
     ui->year->setText(metadata->year());
     ui->albumArt->set_image(metadata->image());
@@ -44,6 +51,7 @@ void MPSongInfoEditor::finish_editing()
     _metadata->set_album_artist(ui->albumArtist->text());
     _metadata->set_lyrics(ui->lyrics->toPlainText());
     _metadata->set_image(ui->albumArt->image());
+    _metadata->set_track_number(QString("%1").arg(ui->trackNumber->value()));
 
     // write metadata
     QFile metadata_file(_metadata->filename().append(".metadata"));

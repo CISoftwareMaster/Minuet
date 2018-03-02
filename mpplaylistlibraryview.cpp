@@ -91,7 +91,7 @@ void MPPlaylistLibraryView::begin_editing()
         ui->addPlaylistBtn->setText(tr("Update"));
 
         // activate controls
-        set_controls_open(true);
+        ui->newPlaylistBtn->setChecked(true);
     }
 }
 

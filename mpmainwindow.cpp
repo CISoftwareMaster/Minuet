@@ -192,13 +192,16 @@ MPMainWindow::MPMainWindow(QWidget *parent) :
 
 void MPMainWindow::reanalyse()
 {
-    // mark everything as replaceable
-    for (int i = 0, l = library_model->current_playlist()->metadata()->length(); i < l; ++i)
-        library_model->current_playlist()->metadata()->at(i)->set_replaceable(true);
+    if (model->metadata()->length() > 0)
+    {
+        // mark everything as replaceable
+        for (int i = 0, l = library_model->current_playlist()->metadata()->length(); i < l; ++i)
+            library_model->current_playlist()->metadata()->at(i)->set_replaceable(true);
 
-    // start analyser
-    thread.begin(this->player, true);
-    set_loading_visibility(true);
+        // start analyser
+        thread.begin(this->player, true);
+        set_loading_visibility(true);
+    }
 }
 
 void MPMainWindow::previousSong()
@@ -364,12 +367,12 @@ void MPMainWindow::mediaChanged(QMediaContent media)
 void MPMainWindow::set_song_info_visibility(bool visible)
 {
     if ((!visible && ui->currentSongInfo->maximumHeight() == 0) ||
-        (visible && ui->currentSongInfo->maximumHeight() == 160))
+        (visible && ui->currentSongInfo->maximumHeight() == 135))
         return;
 
     song_info_animation->stop();
-    song_info_animation->setStartValue(visible ? 0 : 160);
-    song_info_animation->setEndValue(visible ? 160 : 0);
+    song_info_animation->setStartValue(visible ? 0 : 135);
+    song_info_animation->setEndValue(visible ? 135 : 0);
     song_info_animation->start();
 }
 

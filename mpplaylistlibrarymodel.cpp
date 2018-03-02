@@ -7,7 +7,7 @@ MPPlaylistLibraryModel::MPPlaylistLibraryModel(QObject *parent)
     playlists = new QList<MPPlaylistObject *>;
 
     // create the "default" playlist
-    create_playlist("Default", true);
+    create_playlist("Temporary", true);
 
     // initialise our database connection
     database = QSqlDatabase::addDatabase("QSQLITE");
@@ -150,6 +150,7 @@ void MPPlaylistLibraryModel::remove_playlist(int index)
 
             // remove from model
             playlists->removeAt(index);
+            emit layoutChanged();
         }
     }
 }

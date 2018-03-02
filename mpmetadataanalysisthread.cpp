@@ -121,7 +121,7 @@ void MPMetadataAnalysisThread::metadata_update(bool available)
                             QString name = reader.name().toString();
                             QString value = reader.readElementText();
 
-                            if (name == "lyrics") has_lyrics = true;
+                            if (name == "lyrics" && !value.isEmpty()) has_lyrics = true;
 
                             item->set(name, value);
                         }
@@ -245,6 +245,19 @@ void MPMetadataAnalysisThread::metadata_update(bool available)
         }
         else
             _metadata->append(item);
+
+        // create metadata file
+        if (!mfile_read_success)
+        {
+            MPMetadataWriter writer;
+            QFile metadata(item->filename().append(".metadata"));
+
+            if (metadata.open(QIODevice::WriteOnly))
+            {
+                writer.write_metadata(&metadata, item);
+                metadata.close();
+            }
+        }
 
         // move to the next item
         _player->playlist()->setCurrentIndex(analysis_index);

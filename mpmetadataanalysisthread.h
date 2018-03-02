@@ -14,6 +14,7 @@
 #include <QTextStream>
 #include <QFileInfo>
 #include "mpmetadata.h"
+#include "mpmetadatawriter.h"
 
 class MPMetadataAnalysisThread : public QThread
 {
