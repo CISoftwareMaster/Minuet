@@ -39,7 +39,8 @@ SOURCES += \
     mpbutton.cpp \
     mpplaylistlibraryview.cpp \
     mpplaylistobject.cpp \
-    mpplaylistlibrarymodel.cpp
+    mpplaylistlibrarymodel.cpp \
+    mpplaylistobjectgroup.cpp
 
 HEADERS += \
         mpmainwindow.h \
@@ -54,7 +55,8 @@ HEADERS += \
     mpbutton.h \
     mpplaylistlibraryview.h \
     mpplaylistobject.h \
-    mpplaylistlibrarymodel.h
+    mpplaylistlibrarymodel.h \
+    mpplaylistobjectgroup.h
 
 FORMS += \
         mpmainwindow.ui \

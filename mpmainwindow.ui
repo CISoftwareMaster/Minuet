@@ -298,104 +298,107 @@ p, li { white-space: pre-wrap; }
              <enum>QFrame::Raised</enum>
             </property>
             <layout class="QGridLayout" name="gridLayout_4">
-             <item row="3" column="6">
-              <widget class="Line" name="Separator3">
-               <property name="orientation">
-                <enum>Qt::Vertical</enum>
-               </property>
-              </widget>
-             </item>
-             <item row="3" column="4">
-              <widget class="Line" name="Separator2">
-               <property name="orientation">
-                <enum>Qt::Vertical</enum>
-               </property>
-              </widget>
-             </item>
-             <item row="3" column="2">
-              <widget class="Line" name="Separator1">
-               <property name="orientation">
-                <enum>Qt::Vertical</enum>
-               </property>
-              </widget>
-             </item>
-             <item row="3" column="7">
-              <widget class="QLabel" name="songYear">
-               <property name="font">
-                <font>
-                 <pointsize>8</pointsize>
-                </font>
-               </property>
-               <property name="text">
-                <string>Year</string>
-               </property>
-              </widget>
-             </item>
-             <item row="3" column="5">
-              <widget class="QLabel" name="songGenre">
-               <property name="font">
-                <font>
-                 <pointsize>8</pointsize>
-                </font>
-               </property>
-               <property name="text">
-                <string>Genre</string>
-               </property>
-              </widget>
-             </item>
-             <item row="3" column="3">
-              <widget class="QLabel" name="songAlbum">
-               <property name="font">
-                <font>
-                 <pointsize>8</pointsize>
-                </font>
-               </property>
-               <property name="text">
-                <string>Album name</string>
-               </property>
-              </widget>
-             </item>
              <item row="3" column="1">
-              <widget class="QLabel" name="songArtist">
-               <property name="font">
-                <font>
-                 <pointsize>8</pointsize>
-                </font>
+              <widget class="QFrame" name="frame_2">
+               <property name="frameShape">
+                <enum>QFrame::NoFrame</enum>
                </property>
-               <property name="text">
-                <string>Artist Name</string>
+               <property name="frameShadow">
+                <enum>QFrame::Raised</enum>
                </property>
+               <layout class="QHBoxLayout" name="horizontalLayout">
+                <item>
+                 <widget class="QLabel" name="songYear">
+                  <property name="font">
+                   <font>
+                    <pointsize>8</pointsize>
+                   </font>
+                  </property>
+                  <property name="text">
+                   <string>Year</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QLabel" name="songGenre">
+                  <property name="font">
+                   <font>
+                    <pointsize>8</pointsize>
+                   </font>
+                  </property>
+                  <property name="text">
+                   <string>Genre</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QLabel" name="songAlbum">
+                  <property name="font">
+                   <font>
+                    <pointsize>8</pointsize>
+                   </font>
+                  </property>
+                  <property name="text">
+                   <string>Album name</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QLabel" name="songArtist">
+                  <property name="font">
+                   <font>
+                    <pointsize>8</pointsize>
+                   </font>
+                  </property>
+                  <property name="text">
+                   <string>Artist Name</string>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
               </widget>
              </item>
-             <item row="2" column="1">
-              <widget class="QLabel" name="songTitle">
-               <property name="font">
-                <font>
-                 <pointsize>12</pointsize>
-                 <weight>75</weight>
-                 <bold>true</bold>
-                </font>
+             <item row="0" column="1">
+              <widget class="QFrame" name="frame_3">
+               <property name="frameShape">
+                <enum>QFrame::NoFrame</enum>
                </property>
-               <property name="text">
-                <string>Song Title</string>
+               <property name="frameShadow">
+                <enum>QFrame::Raised</enum>
                </property>
-              </widget>
-             </item>
-             <item row="2" column="7">
-              <widget class="QLabel" name="nowPlayingLabel">
-               <property name="font">
-                <font>
-                 <pointsize>7</pointsize>
-                 <weight>75</weight>
-                 <bold>true</bold>
-                </font>
-               </property>
-               <property name="text">
-                <string>Now Playing:</string>
-               </property>
-               <property name="alignment">
-                <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-               </property>
+               <layout class="QHBoxLayout" name="horizontalLayout_2">
+                <item>
+                 <widget class="QLabel" name="songTitle">
+                  <property name="font">
+                   <font>
+                    <pointsize>12</pointsize>
+                    <weight>75</weight>
+                    <bold>true</bold>
+                   </font>
+                  </property>
+                  <property name="text">
+                   <string>Song Title</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QLabel" name="nowPlayingLabel">
+                  <property name="font">
+                   <font>
+                    <pointsize>7</pointsize>
+                    <weight>75</weight>
+                    <bold>true</bold>
+                   </font>
+                  </property>
+                  <property name="text">
+                   <string>Now Playing:</string>
+                  </property>
+                  <property name="alignment">
+                   <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
               </widget>
              </item>
             </layout>
@@ -588,6 +591,8 @@ p, li { white-space: pre-wrap; }
     </property>
     <addaction name="actionAdd"/>
     <addaction name="actionRemove_from_Playlist"/>
+    <addaction name="separator"/>
+    <addaction name="actionRefresh_2"/>
    </widget>
    <widget class="QMenu" name="menuView">
     <property name="title">
@@ -636,14 +641,15 @@ p, li { white-space: pre-wrap; }
     <bool>false</bool>
    </attribute>
    <addaction name="actionPlaylists"/>
+   <addaction name="actionRefresh"/>
    <addaction name="actionAddToPlaylist"/>
    <addaction name="actionRemove"/>
    <addaction name="separator"/>
    <addaction name="actionPrevious"/>
    <addaction name="actionNext"/>
    <addaction name="separator"/>
-   <addaction name="actionPausePlay"/>
    <addaction name="actionStop"/>
+   <addaction name="actionPausePlay"/>
    <addaction name="separator"/>
    <addaction name="actionEditInfo"/>
    <addaction name="actionLyrics"/>
@@ -858,9 +864,34 @@ p, li { white-space: pre-wrap; }
     <string>Ctrl+Shift+L</string>
    </property>
   </action>
+  <action name="actionRefresh">
+   <property name="icon">
+    <iconset resource="resources.qrc">
+     <normaloff>:/icons/refresh.png</normaloff>:/icons/refresh.png</iconset>
+   </property>
+   <property name="text">
+    <string>Refresh</string>
+   </property>
+   <property name="toolTip">
+    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Refresh playlist information. (Starts the metadata analyser)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+   </property>
+  </action>
+  <action name="actionRefresh_2">
+   <property name="text">
+    <string>Refresh</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+R</string>
+   </property>
+  </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <customwidgets>
+  <customwidget>
+   <class>MPButton</class>
+   <extends>QPushButton</extends>
+   <header>mpbutton.h</header>
+  </customwidget>
   <customwidget>
    <class>MPFancySlider</class>
    <extends>QSlider</extends>
@@ -870,11 +901,6 @@ p, li { white-space: pre-wrap; }
    <class>MPPlaylistTableView</class>
    <extends>QTableView</extends>
    <header>mpplaylisttableview.h</header>
-  </customwidget>
-  <customwidget>
-   <class>MPButton</class>
-   <extends>QPushButton</extends>
-   <header>mpbutton.h</header>
   </customwidget>
  </customwidgets>
  <resources>
@@ -1078,6 +1104,22 @@ p, li { white-space: pre-wrap; }
    <signal>toggled(bool)</signal>
    <receiver>actionShow_Playlist_Library</receiver>
    <slot>setChecked(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>actionRefresh_2</sender>
+   <signal>triggered()</signal>
+   <receiver>actionRefresh</receiver>
+   <slot>trigger()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>-1</x>

@@ -12,5 +12,6 @@
         <file>icons/stop.png</file>
         <file>icons/edit.png</file>
         <file>icons/playlists.png</file>
+        <file>icons/refresh.png</file>
     </qresource>
 </RCC>

@@ -162,6 +162,9 @@ MPMainWindow::MPMainWindow(QWidget *parent) :
     connect(library_model, SIGNAL(model_changed()),
             this, SLOT(model_changed()));
 
+    connect(ui->actionRefresh, SIGNAL(triggered(bool)),
+            this, SLOT(reanalyse()));
+
     // initialise animations
     song_info_animation = new QPropertyAnimation(ui->currentSongInfo, "maximumHeight");
     loading_animation = new QPropertyAnimation(ui->loadingIndicator, "maximumHeight");
@@ -185,6 +188,17 @@ MPMainWindow::MPMainWindow(QWidget *parent) :
     if (!library_model->database_is_opened())
         QMessageBox::warning(this, tr("Warning!"),
                              tr("Your playlist library database file is missing!"));
+}
+
+void MPMainWindow::reanalyse()
+{
+    // mark everything as replaceable
+    for (int i = 0, l = library_model->current_playlist()->metadata()->length(); i < l; ++i)
+        library_model->current_playlist()->metadata()->at(i)->set_replaceable(true);
+
+    // start analyser
+    thread.begin(this->player, true);
+    set_loading_visibility(true);
 }
 
 void MPMainWindow::previousSong()
@@ -217,7 +231,6 @@ void MPMainWindow::model_changed()
         player->setPlaylist(object->playlist());
         player->stop();
         emit player->mediaChanged(player->currentMedia());
-
     }
 
     // run the metadata analyser
@@ -225,6 +238,7 @@ void MPMainWindow::model_changed()
     {
         object->load_files();
         thread.begin(this->player, true);
+        set_loading_visibility(true);
     }
 
     // update player
@@ -344,20 +358,18 @@ void MPMainWindow::mediaChanged(QMediaContent media)
         }
     }
     else
-    {
         setWindowTitle("Minuet");
-    }
 }
 
 void MPMainWindow::set_song_info_visibility(bool visible)
 {
     if ((!visible && ui->currentSongInfo->maximumHeight() == 0) ||
-        (visible && ui->currentSongInfo->maximumHeight() == 140))
+        (visible && ui->currentSongInfo->maximumHeight() == 160))
         return;
 
     song_info_animation->stop();
-    song_info_animation->setStartValue(visible ? 0 : 140);
-    song_info_animation->setEndValue(visible ? 140 : 0);
+    song_info_animation->setStartValue(visible ? 0 : 160);
+    song_info_animation->setEndValue(visible ? 160 : 0);
     song_info_animation->start();
 }
 

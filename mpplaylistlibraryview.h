@@ -51,12 +51,19 @@ private:
     MPPlaylistLibraryModel *_model;
 
     QPropertyAnimation *open_animation;
+    QPropertyAnimation *new_playlist_open_animation;
 
     void paintEvent(QPaintEvent *ev);
+    bool editing;
+    int editing_target;
 
 private slots:
     void selection_changed(QModelIndex);
     void update_effect();
+    void set_controls_open(bool active);
+    void begin_editing();
+    void create_playlist();
+    void remove_playlist();
 };
 
 #endif // MPPLAYLISTLIBRARYVIEW_H

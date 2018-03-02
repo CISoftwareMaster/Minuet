@@ -24,7 +24,7 @@
       </font>
      </property>
      <property name="text">
-      <string>My Playlist Library</string>
+      <string>My Playlists</string>
      </property>
     </widget>
    </item>
@@ -107,6 +107,41 @@
     </widget>
    </item>
    <item>
+    <widget class="QFrame" name="newPlaylistFrame">
+     <property name="styleSheet">
+      <string notr="true">background: rgba(240, 240, 240, 0.5);</string>
+     </property>
+     <property name="frameShape">
+      <enum>QFrame::NoFrame</enum>
+     </property>
+     <property name="frameShadow">
+      <enum>QFrame::Raised</enum>
+     </property>
+     <layout class="QHBoxLayout" name="horizontalLayout_2">
+      <item>
+       <widget class="QLineEdit" name="newPlaylistName">
+        <property name="styleSheet">
+         <string notr="true">background: rgba(255, 255, 255, 0.2)</string>
+        </property>
+        <property name="text">
+         <string>New Playlist</string>
+        </property>
+        <property name="placeholderText">
+         <string>Playlist name</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="MPTranslucentButton" name="addPlaylistBtn">
+        <property name="text">
+         <string>Add</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
     <widget class="QFrame" name="frame">
      <property name="frameShape">
       <enum>QFrame::NoFrame</enum>
@@ -129,7 +164,7 @@
        </spacer>
       </item>
       <item>
-       <widget class="MPTranslucentButton" name="pushButton">
+       <widget class="MPTranslucentButton" name="newPlaylistBtn">
         <property name="maximumSize">
          <size>
           <width>32</width>
@@ -144,10 +179,13 @@
         <property name="text">
          <string>+</string>
         </property>
+        <property name="checkable">
+         <bool>true</bool>
+        </property>
        </widget>
       </item>
       <item>
-       <widget class="MPTranslucentButton" name="pushButton_2">
+       <widget class="MPTranslucentButton" name="removePlaylistBtn">
         <property name="maximumSize">
          <size>
           <width>32</width>

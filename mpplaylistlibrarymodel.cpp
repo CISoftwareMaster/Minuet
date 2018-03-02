@@ -39,11 +39,37 @@ MPPlaylistLibraryModel::MPPlaylistLibraryModel(QObject *parent)
         // update playlist filenames
         new_playlist->set_pid(query.value("pid").toString());
         new_playlist->set_items(items);
+        new_playlist->set_initialised(items->length() == 0);
         new_playlist->playlist()->setCurrentIndex(0);
     }
 
     // default index
     index = 0;
+}
+
+void MPPlaylistLibraryModel::change_playlist_name(int index, QString name)
+{
+    if (valid_index(index))
+    {
+        MPPlaylistObject *target = playlists->at(index);
+
+        // update playlist name
+        if (database.transaction())
+        {
+            QSqlQuery query;
+            query.prepare("UPDATE playlists SET name=:name WHERE pid=:pid");
+            query.bindValue(":pid", target->pid());
+            query.bindValue(":name", name);
+            query.exec();
+
+            database.commit();
+        }
+    }
+}
+
+MPPlaylistObject *MPPlaylistLibraryModel::playlist_at(int index)
+{
+    return playlists->at(index);
 }
 
 void MPPlaylistLibraryModel::remove_item(int index)
@@ -57,7 +83,10 @@ void MPPlaylistLibraryModel::remove_item(int index)
         {
             // delete the targetted index
             MPMetadata *target = current->metadata()->at(index);
-            database.exec("DELETE FROM urls WHERE uid=" + target->iid());
+            QSqlQuery query;
+            query.prepare("DELETE FROM urls WHERE uid=:uid");
+            query.bindValue(":uid", target->iid());
+            query.exec();
 
             // save changes
             database.commit();
@@ -70,9 +99,58 @@ void MPPlaylistLibraryModel::insert_item(QString path)
     if (index > 0 && database.transaction())
     {
         // insert filename to database
-        database.exec("INSERT INTO urls (pid,url) VALUES (" + QString(playlists->at(index)->pid())
-                      + ", \"" + path + "\")");
+        QSqlQuery query;
+        query.prepare("INSERT INTO urls (pid, url) VALUES (:pid, :url)");
+        query.bindValue(":pid", playlists->at(index)->pid());
+        query.bindValue(":url", path);
+        query.exec();
+
         database.commit();
+    }
+}
+
+void MPPlaylistLibraryModel::insert_playlist(QString name)
+{
+    if (database.transaction())
+    {
+        QSqlQuery query;
+        query.prepare("INSERT INTO playlists (name) VALUES (:name)");
+        query.bindValue(":name", name);
+        query.exec();
+
+        database.commit();
+
+        // fetch playlist information
+        QSqlQuery nquery;
+        nquery.prepare("SELECT * FROM playlists ORDER BY pid DESC LIMIT 1");
+        nquery.exec();
+
+        if (nquery.first())
+        {
+            MPPlaylistObject *new_playlist = create_playlist(name, true);
+            new_playlist->set_pid(nquery.value("pid").toString());
+            new_playlist->playlist()->setCurrentIndex(0);
+        }
+    }
+}
+
+void MPPlaylistLibraryModel::remove_playlist(int index)
+{
+    if (valid_index(index))
+    {
+        if (database.transaction())
+        {
+            MPPlaylistObject *current = playlists->at(index);
+            QSqlQuery query;
+            query.prepare("DELETE FROM playlists WHERE pid=:pid");
+            query.bindValue(":pid", current->pid());
+            query.exec();
+
+            database.commit();
+
+            // remove from model
+            playlists->removeAt(index);
+        }
     }
 }
 
@@ -136,7 +214,7 @@ QVariant MPPlaylistLibraryModel::data(const QModelIndex &index, int role) const
     int row = index.row();
 
     if (role == Qt::DisplayRole)
-        return playlists->at(row)->name().append((row == this->index ? " (current)" : ""));
+        return playlists->at(row)->name().prepend((row == this->index ? " >" : ""));
 
     return QVariant();
 }

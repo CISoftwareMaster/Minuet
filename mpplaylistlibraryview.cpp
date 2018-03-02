@@ -21,6 +21,10 @@ MPPlaylistLibraryView::MPPlaylistLibraryView(QWidget *parent)
     _model = new MPPlaylistLibraryModel;
     ui->playlistView->setModel(_model);
 
+    // editing variables
+    editing = false;
+    editing_target = 0;
+
     // allocate memory for this widget's background effect
     background = QPixmap();
     blur_label = new QLabel;
@@ -41,10 +45,17 @@ MPPlaylistLibraryView::MPPlaylistLibraryView(QWidget *parent)
     // hide this by default
     setMaximumWidth(0);
 
-    // initialise animation
+    // hide the new playlist controls by default
+    ui->newPlaylistFrame->setMaximumHeight(0);
+
+    // initialise animations
     open_animation = new QPropertyAnimation(this, "maximumWidth");
     open_animation->setEasingCurve(QEasingCurve::InOutQuart);
     open_animation->setDuration(500);
+
+    new_playlist_open_animation = new QPropertyAnimation(ui->newPlaylistFrame, "maximumHeight");
+    new_playlist_open_animation->setEasingCurve(QEasingCurve::OutBounce);
+    new_playlist_open_animation->setDuration(500);
 
     // points to NULL by default
     effect_view = NULL;
@@ -56,6 +67,64 @@ MPPlaylistLibraryView::MPPlaylistLibraryView(QWidget *parent)
     connect(effect_update_timer, SIGNAL(timeout()), this, SLOT(update_effect()));
     connect(ui->playlistView, SIGNAL(activated(QModelIndex)),
             this, SLOT(selection_changed(QModelIndex)));
+    connect(ui->playlistView, SIGNAL(doubleClicked(QModelIndex)),
+            this, SLOT(begin_editing()));
+    connect(ui->newPlaylistBtn, SIGNAL(toggled(bool)),
+            this, SLOT(set_controls_open(bool)));
+    connect(ui->addPlaylistBtn, SIGNAL(clicked(bool)),
+            this, SLOT(create_playlist()));
+    connect(ui->removePlaylistBtn, SIGNAL(clicked(bool)),
+            this, SLOT(remove_playlist()));
+}
+
+void MPPlaylistLibraryView::begin_editing()
+{
+    int index = ui->playlistView->currentIndex().row();
+
+    if (index > 0 && _model->valid_index(index))
+    {
+        // start editing mode
+        MPPlaylistObject *object = _model->playlist_at(index);
+        editing = true;
+        editing_target = index;
+
+        ui->newPlaylistName->setText(object->name());
+        ui->addPlaylistBtn->setText(tr("Update"));
+
+        // activate controls
+        set_controls_open(true);
+    }
+}
+
+void MPPlaylistLibraryView::create_playlist()
+{
+    // create playlist
+    if (!editing)
+        _model->insert_playlist(ui->newPlaylistName->text());
+    else
+    {
+        // update playlist name
+        if (_model->valid_index(editing_target))
+        {
+            QString new_name = ui->newPlaylistName->text();
+            _model->change_playlist_name(editing_target, new_name);
+            _model->playlist_at(editing_target)->set_name(new_name);
+        }
+    }
+
+    // reset the playlist name field
+    ui->newPlaylistName->setText("New Playlist");
+
+    // hide the controls again
+    ui->newPlaylistBtn->setChecked(false);
+}
+
+void MPPlaylistLibraryView::remove_playlist()
+{
+    int index = ui->playlistView->currentIndex().row();
+
+    if (index > 0)
+        _model->remove_playlist(index);
 }
 
 void MPPlaylistLibraryView::selection_changed(QModelIndex index)
@@ -104,10 +173,31 @@ void MPPlaylistLibraryView::set_effect_view(QFrame *effect_view)
 
 void MPPlaylistLibraryView::set_open(bool active)
 {
+    // hide the "new playlist" controls
+    if (!active)
+        ui->newPlaylistBtn->setChecked(false);
+
     open_animation->stop();
     open_animation->setStartValue(active ? 0 : LIBRARY_SIDEBAR_WIDTH);
     open_animation->setEndValue(active ? LIBRARY_SIDEBAR_WIDTH : 0);
     open_animation->start();
+}
+
+void MPPlaylistLibraryView::set_controls_open(bool active)
+{
+    if (!active)
+    {
+        editing = false;
+        ui->addPlaylistBtn->setText(tr("Add"));
+    }
+
+    new_playlist_open_animation->stop();
+    new_playlist_open_animation->setStartValue(active ? 0 : 41);
+    new_playlist_open_animation->setEndValue(active ? 41 : 0);
+    new_playlist_open_animation->start();
+
+    // focus on the new playlist textfield
+    ui->newPlaylistName->setFocus();
 }
 
 void MPPlaylistLibraryView::paintEvent(QPaintEvent *ev)
@@ -162,4 +252,5 @@ MPPlaylistLibraryView::~MPPlaylistLibraryView()
     delete blur_label;
     delete effect_update_timer;
     delete open_animation;
+    delete new_playlist_open_animation;
 }

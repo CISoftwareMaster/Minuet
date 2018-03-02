@@ -60,6 +60,7 @@ private slots:
     void model_changed();
     void previousSong();
     void nextSong();
+    void reanalyse();
 
 private:
     QModelIndex selected_item;
