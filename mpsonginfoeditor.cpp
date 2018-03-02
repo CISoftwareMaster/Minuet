@@ -27,8 +27,8 @@ void MPSongInfoEditor::edit(MPMetadata *metadata)
     ui->genre->setText(metadata->genre());
     ui->albumArtist->setText(metadata->album_artist());
     ui->year->setText(metadata->year());
-    ui->lyrics->setHtml(metadata->lyrics());
     ui->albumArt->set_image(metadata->image());
+    ui->lyrics->setText(metadata->lyrics());
 
     this->show();
 }
@@ -42,8 +42,18 @@ void MPSongInfoEditor::finish_editing()
     _metadata->set_genre(ui->genre->text());
     _metadata->set_year(ui->year->text());
     _metadata->set_album_artist(ui->albumArtist->text());
-    _metadata->set_lyrics(ui->lyrics->toHtml());
+    _metadata->set_lyrics(ui->lyrics->toPlainText());
     _metadata->set_image(ui->albumArt->image());
+
+    // write metadata
+    QFile metadata_file(_metadata->filename().append(".metadata"));
+
+    if (metadata_file.open(QIODevice::WriteOnly))
+    {
+        MPMetadataWriter writer;
+        writer.write_metadata(&metadata_file, _metadata);
+        metadata_file.close();
+    }
 
     // send editing finished signal
     emit editing_finished();

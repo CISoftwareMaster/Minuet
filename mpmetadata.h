@@ -4,6 +4,26 @@
 #include <QObject>
 #include <QImage>
 #include <QPixmap>
+#include <QVariant>
+
+class MPMetadataPair
+{
+public:
+    explicit MPMetadataPair(QString key="", QString value="")
+    {
+        _key = key;
+        _value = value;
+    }
+
+    QString key() { return _key; }
+    QString value() { return _value; }
+    void set_key(QString key) { _key = key; }
+    void set_value(QString value) { _value = value; }
+
+private:
+    QString _key;
+    QString _value;
+};
 
 class MPMetadata : public QObject
 {
@@ -24,6 +44,9 @@ public:
     QString filename();
     QPixmap image();
     bool replaceable();
+
+    QList<MPMetadataPair> get_metadata_pairs();
+    void set(QString key, QVariant value);
 
     void set_iid(QString iid);
     void set_track_number(QString track_number);

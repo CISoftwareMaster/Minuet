@@ -95,32 +95,81 @@ void MPMetadataAnalysisThread::metadata_update(bool available)
 
         // get metadata
         MPMetadata *item = new MPMetadata;
-        item->set_track_number(_player->metaData(QMediaMetaData::TrackNumber).toString());
-        item->set_title(_player->metaData(QMediaMetaData::Title).toString());
-        item->set_artist(_player->metaData(QMediaMetaData::ContributingArtist).toString());
-        item->set_album(_player->metaData(QMediaMetaData::AlbumTitle).toString());
-        item->set_album_artist(_player->metaData(QMediaMetaData::AlbumArtist).toString());
-        item->set_year(_player->metaData(QMediaMetaData::Year).toString());
-        item->set_genre(_player->metaData(QMediaMetaData::Genre).toString());
         item->set_filename(base_url + "/" + info.baseName());
 
-        // try to load its lyrics
-        QString lyrics = _player->metaData(QMediaMetaData::Lyrics).toString();
+        // check if metadata file exists
+        bool mfile_read_success = QFileInfo::exists(item->filename() + ".metadata");
+        bool has_lyrics = false;
 
-        if (lyrics.isEmpty())
+        if (mfile_read_success)
         {
-            // load its lyric file (if its available)
-            QString title = item->filename() + ".lyrics";
-            QFile lyric_file(title);
+            // open the metadata file
+            QFile metadata_file(item->filename() + ".metadata");
 
-            if (lyric_file.open(QIODevice::ReadOnly))
+            if (metadata_file.open(QIODevice::ReadOnly))
             {
-                // read its content
-                QTextStream stream(&lyric_file);
-                item->set_lyrics(stream.readAll());
+                QXmlStreamReader reader(&metadata_file);
 
-                // end of reading
-                lyric_file.close();
+                if (reader.readNextStartElement() && reader.name() == "metadata")
+                {
+                    // parse the metadata file
+                    while (reader.readNextStartElement())
+                    {
+                        // only perform read operations, if the tag name is not empty
+                        if (!reader.name().isEmpty())
+                        {
+                            QString name = reader.name().toString();
+                            QString value = reader.readElementText();
+
+                            if (name == "lyrics") has_lyrics = true;
+
+                            item->set(name, value);
+                        }
+                        else
+                            reader.skipCurrentElement();
+                    }
+                }
+                else
+                    // something happened
+                    mfile_read_success = false;
+            }
+            else
+                mfile_read_success = false;
+        }
+
+        // fallback method (for when something goes wrong with the metadata file)
+        if (!mfile_read_success)
+        {
+            // read the song's metadata using the "QPlayer" method
+            item->set_track_number(_player->metaData(QMediaMetaData::TrackNumber).toString());
+            item->set_title(_player->metaData(QMediaMetaData::Title).toString());
+            item->set_artist(_player->metaData(QMediaMetaData::ContributingArtist).toString());
+            item->set_album(_player->metaData(QMediaMetaData::AlbumTitle).toString());
+            item->set_album_artist(_player->metaData(QMediaMetaData::AlbumArtist).toString());
+            item->set_year(_player->metaData(QMediaMetaData::Year).toString());
+            item->set_genre(_player->metaData(QMediaMetaData::Genre).toString());
+        }
+
+        // try to load its lyrics
+        if (!has_lyrics)
+        {
+            QString lyrics = _player->metaData(QMediaMetaData::Lyrics).toString();
+
+            if (lyrics.isEmpty())
+            {
+                // load its lyric file (if its available)
+                QString title = item->filename() + ".lyrics";
+                QFile lyric_file(title);
+
+                if (lyric_file.open(QIODevice::ReadOnly))
+                {
+                    // read its content
+                    QTextStream stream(&lyric_file);
+                    item->set_lyrics(stream.readAll());
+
+                    // end of reading
+                    lyric_file.close();
+                }
             }
         }
 

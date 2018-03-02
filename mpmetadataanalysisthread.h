@@ -10,6 +10,7 @@
 #include <QMediaPlayer>
 #include <QMediaPlaylist>
 #include <QMediaMetaData>
+#include <QXmlStreamReader>
 #include <QTextStream>
 #include <QFileInfo>
 #include "mpmetadata.h"

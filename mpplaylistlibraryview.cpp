@@ -13,7 +13,6 @@ MPPlaylistLibraryView::MPPlaylistLibraryView(QWidget *parent)
     mpalette.setColor(QPalette::HighlightedText, QColor(50, 50, 50));
     mpalette.setColor(QPalette::Background, QColor(255, 255, 255, 0));
     mpalette.setColor(QPalette::Base, QColor(255, 255, 255, 50));
-    mpalette.setColor(QPalette::AlternateBase, QColor(200, 200, 200, 50));
     ui->playlistView->setPalette(mpalette);
     ui->playlistView->verticalScrollBar()->setMaximumWidth(4);
 

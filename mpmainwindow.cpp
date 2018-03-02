@@ -346,7 +346,7 @@ void MPMainWindow::mediaChanged(QMediaContent media)
             ui->songArt->setPixmap(metadata->image());
 
             // update lyrics
-            ui->lyricsView->setHtml((metadata->lyrics().isEmpty() ?
+            ui->lyricsView->setText((metadata->lyrics().isEmpty() ?
                                          "No Lyrics" : metadata->lyrics()));
 
             // update title
@@ -629,7 +629,10 @@ void MPMainWindow::download_lyrics()
 void MPMainWindow::lyrics_downloaded(QString lyrics)
 {
     // update lyrics view
-    ui->lyricsView->setHtml(lyrics);
+    if (lyrics.isEmpty())
+        ui->lyricsView->setPlainText("No Lyrics");
+    else
+        ui->lyricsView->setText(lyrics);
 
     // hide the lyric fetch indicator
     set_lyric_download_visibility(false);

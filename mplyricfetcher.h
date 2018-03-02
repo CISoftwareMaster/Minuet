@@ -10,6 +10,7 @@
 #include <QFileInfo>
 #include <QTextStream>
 #include "mpmetadata.h"
+#include "mpmetadatawriter.h"
 
 class MPLyricFetcher : public QObject
 {

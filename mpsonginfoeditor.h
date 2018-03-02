@@ -3,6 +3,7 @@
 
 #include <QWidget>
 #include "mpmetadata.h"
+#include "mpmetadatawriter.h"
 #include "mpimagewell.h"
 
 namespace Ui {

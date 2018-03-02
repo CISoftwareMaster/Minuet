@@ -134,7 +134,7 @@ void MPMetadata::set_genre(QString genre)
 void MPMetadata::set_lyrics(QString lyrics)
 {
     // convert newlines to breaks
-    _lyrics = lyrics.replace("\n", "<br>");
+    _lyrics = lyrics;
 }
 
 void MPMetadata::set_filename(QString filename)
@@ -150,4 +150,30 @@ void MPMetadata::set_image(QPixmap image)
 void MPMetadata::set_replaceable(bool replaceable)
 {
     _replaceable = replaceable;
+}
+
+QList<MPMetadataPair> MPMetadata::get_metadata_pairs()
+{
+    QList<MPMetadataPair> pairs;
+    pairs.append(MPMetadataPair("title", _title));
+    pairs.append(MPMetadataPair("artist", _artist));
+    pairs.append(MPMetadataPair("album_artist", _album_artist));
+    pairs.append(MPMetadataPair("album", _album));
+    pairs.append(MPMetadataPair("track_number", _track_number));
+    pairs.append(MPMetadataPair("year", _year));
+    pairs.append(MPMetadataPair("genre", _genre));
+    pairs.append(MPMetadataPair("lyrics", _lyrics));
+    return pairs;
+}
+
+void MPMetadata::set(QString key, QVariant value)
+{
+    if (key == "title") _title = value.toString();
+    else if (key == "artist") _artist = value.toString();
+    else if (key == "album_artist") _album_artist = value.toString();
+    else if (key == "album") _album = value.toString();
+    else if (key == "track_number") _track_number = value.toString();
+    else if (key == "year") _year = value.toString();
+    else if (key == "genre") _genre = value.toString();
+    else if (key == "lyrics") _lyrics = value.toString();
 }
