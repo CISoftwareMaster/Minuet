@@ -151,7 +151,7 @@ QVariant MPPlaylistTableVIewModel::headerData(int section, Qt::Orientation orien
     {
         switch (section)
         {
-            case 0: return "Track #"; break;
+            case 0: return "#"; break;
             case 1: return "Title"; break;
             case 2: return "Artist"; break;
             case 3: return "Album Artist"; break;

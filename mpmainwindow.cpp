@@ -43,7 +43,7 @@ MPMainWindow::MPMainWindow(QWidget *parent) :
     ui->playlistView->horizontalHeader()->setSectionResizeMode(1, QHeaderView::Stretch);
     ui->playlistView->horizontalHeader()->setSectionResizeMode(2, QHeaderView::Stretch);
     ui->playlistView->horizontalHeader()->setSectionResizeMode(3, QHeaderView::Stretch);
-    ui->playlistView->horizontalHeader()->setSectionResizeMode(4, QHeaderView::Fixed);
+    ui->playlistView->horizontalHeader()->setSectionResizeMode(4, QHeaderView::Stretch);
     ui->playlistView->horizontalHeader()->setSectionResizeMode(5, QHeaderView::Stretch);
 
     // initialise the song info editor
